@@ -3,6 +3,7 @@ from django.db import models
 
 
 class Profile(models.Model):
+
     ROLE_CHOICES = [
         ('manager', 'Manager'),
         ('qa', 'QA'),
@@ -37,6 +38,7 @@ class Profile(models.Model):
 
 
 class Project(models.Model):
+
     title = models.CharField(
         max_length=200
     )

@@ -3,10 +3,12 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from .models import Project
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
     LogoutSerializer,
+    ProjectSerializer,
 )
 
 
@@ -90,9 +92,18 @@ class LogoutView(generics.GenericAPIView):
             raise_exception=True
         )
 
+        serializer.save()
+
         return Response(
             {
                 'message': 'User logged out successfully.'
             },
             status=status.HTTP_200_OK
         )
+
+
+# Ticket 4: Project Creation API
+class ProjectCreateView(generics.CreateAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated]

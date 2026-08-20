@@ -11,232 +11,308 @@ import os
 from dotenv import load_dotenv
 
 
+# ============================================================
+# BASE DIRECTORY
+# ============================================================
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-load_dotenv(BASE_DIR / '.env')
+# ============================================================
+# ENVIRONMENT VARIABLES
+# ============================================================
+
+load_dotenv(BASE_DIR / ".env")
 
 
+# ============================================================
+# SECURITY
+# ============================================================
 
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError(
+        "SECRET_KEY is not set in the .env file."
+    )
 
 DEBUG = os.getenv(
-    'DEBUG',
-    'False'
-).lower() == 'true'
+    "DEBUG",
+    "False"
+).lower() == "true"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+]
 
+
+# ============================================================
+# APPLICATIONS
+# ============================================================
 
 INSTALLED_APPS = [
 
+    # Django applications
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    # Third-party applications
+    "rest_framework",
+    "drf_spectacular",
+    "rest_framework_simplejwt.token_blacklist",
 
-   
-    'rest_framework',
-    'drf_spectacular',
-    'rest_framework_simplejwt.token_blacklist',
-
-    # Local apps
-    'accounts',
+    # Local applications
+    "accounts",
 ]
 
 
-
+# ============================================================
+# MIDDLEWARE
+# ============================================================
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'config.urls'
 
+# ============================================================
+# URL CONFIGURATION
+# ============================================================
+
+ROOT_URLCONF = "config.urls"
+
+
+# ============================================================
+# TEMPLATES
+# ============================================================
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
 
+# ============================================================
+# WSGI
+# ============================================================
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
+
+# ============================================================
+# DATABASE
+# ============================================================
+
+DB_ENGINE = os.getenv(
+    "DB_ENGINE",
+    "django.db.backends.sqlite3"
+)
+
+DB_NAME = os.getenv(
+    "DB_NAME",
+    "db.sqlite3"
+)
 
 DATABASES = {
-    'default': {
-        'ENGINE': os.getenv(
-            'DB_ENGINE',
-            'django.db.backends.sqlite3'
-        ),
-        'NAME': BASE_DIR / os.getenv(
-            'DB_NAME',
-            'db.sqlite3'
-        ),
+    "default": {
+        "ENGINE": DB_ENGINE,
+        "NAME": BASE_DIR / DB_NAME,
     }
 }
 
 
+# ============================================================
+# PASSWORD VALIDATION
+# ============================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'UserAttributeSimilarityValidator'
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
         ),
     },
     {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'MinimumLengthValidator'
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "MinimumLengthValidator"
         ),
     },
     {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'CommonPasswordValidator'
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "CommonPasswordValidator"
         ),
     },
     {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'NumericPasswordValidator'
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "NumericPasswordValidator"
         ),
     },
 ]
 
 
+# ============================================================
+# DJANGO REST FRAMEWORK
+# ============================================================
 
 REST_FRAMEWORK = {
 
-    # JWT authentication
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
 
-    # Authentication required by default
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
     ],
 
-    # Swagger / OpenAPI
-    'DEFAULT_SCHEMA_CLASS': (
-        'drf_spectacular.openapi.AutoSchema'
+    "DEFAULT_SCHEMA_CLASS": (
+        "drf_spectacular.openapi.AutoSchema"
     ),
 }
 
 
+# ============================================================
+# JWT CONFIGURATION
+# ============================================================
 
 SIMPLE_JWT = {
 
-    # Access token lifetime
-    'ACCESS_TOKEN_LIFETIME': timedelta(
+    # Access token is valid for 30 minutes
+    "ACCESS_TOKEN_LIFETIME": timedelta(
         minutes=int(
             os.getenv(
-                'JWT_ACCESS_TOKEN_LIFETIME_MINUTES',
-                '30'
+                "JWT_ACCESS_TOKEN_LIFETIME_MINUTES",
+                "30"
             )
         )
     ),
 
-    # Refresh token lifetime
-    'REFRESH_TOKEN_LIFETIME': timedelta(
+    # Refresh token is valid for 7 days
+    "REFRESH_TOKEN_LIFETIME": timedelta(
         days=int(
             os.getenv(
-                'JWT_REFRESH_TOKEN_LIFETIME_DAYS',
-                '7'
+                "JWT_REFRESH_TOKEN_LIFETIME_DAYS",
+                "7"
             )
         )
     ),
 
     # Refresh token rotation
-    'ROTATE_REFRESH_TOKENS': True,
+    "ROTATE_REFRESH_TOKENS": True,
 
     # Blacklist old refresh token
-    'BLACKLIST_AFTER_ROTATION': True,
+    "BLACKLIST_AFTER_ROTATION": True,
 
     # Update last login
-    'UPDATE_LAST_LOGIN': True,
+    "UPDATE_LAST_LOGIN": True,
 
-    # Authentication header
-    'AUTH_HEADER_TYPES': ('Bearer',),
+    # Authorization header
+    "AUTH_HEADER_TYPES": ("Bearer",),
 
-    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
 
     # User ID
-    'USER_ID_FIELD': 'id',
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
 
-    'USER_ID_CLAIM': 'user_id',
+    # JWT algorithm
+    "ALGORITHM": "HS256",
 
-    # Algorithm
-    'ALGORITHM': 'HS256',
+    # JWT signing key
+    "SIGNING_KEY": SECRET_KEY,
 
-    # Use Django secret key
-    'SIGNING_KEY': SECRET_KEY,
-
-    # Token classes
-    'AUTH_TOKEN_CLASSES': (
-        'rest_framework_simplejwt.tokens.AccessToken',
+    # Only AccessToken is accepted by
+    # JWTAuthentication for protected APIs
+    "AUTH_TOKEN_CLASSES": (
+        "rest_framework_simplejwt.tokens.AccessToken",
     ),
 
-    'TOKEN_TYPE_CLAIM': 'token_type',
+    # Token type claim
+    "TOKEN_TYPE_CLAIM": "token_type",
 
-    'JTI_CLAIM': 'jti',
+    # JWT ID
+    "JTI_CLAIM": "jti",
 }
 
+
+# ============================================================
+# API DOCUMENTATION
+# ============================================================
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Project Management API',
-    'DESCRIPTION': 'Project Management Backend API',
-    'VERSION': '1.0.0',
+    "TITLE": "Project Management API",
+    "DESCRIPTION": (
+        "Collaborative Project Management Backend API"
+    ),
+    "VERSION": "1.0.0",
 }
 
 
-LANGUAGE_CODE = 'en-us'
+# ============================================================
+# INTERNATIONALIZATION
+# ============================================================
+
+LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = os.getenv(
-    'TIME_ZONE',
-    'Asia/Karachi'
+    "TIME_ZONE",
+    "Asia/Karachi"
 )
 
 USE_I18N = True
 USE_TZ = True
 
 
+# ============================================================
+# STATIC FILES
+# ============================================================
 
-STATIC_URL = 'static/'
-
-
-MEDIA_URL = '/media/'
-
-MEDIA_ROOT = BASE_DIR / 'media'
+STATIC_URL = "static/"
 
 
+# ============================================================
+# MEDIA FILES
+# ============================================================
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = BASE_DIR / "media"
+
+
+# ============================================================
+# EMAIL
+# ============================================================
 
 EMAIL_BACKEND = (
-    'django.core.mail.backends.console.EmailBackend'
+    "django.core.mail.backends.console.EmailBackend"
 )
 
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# ============================================================
+# DEFAULT PRIMARY KEY
+# ============================================================
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
