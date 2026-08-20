@@ -7,6 +7,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Profile
 
 
+# ============================================================
+# User Registration Serializer
+# ============================================================
+
 class RegisterSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(
@@ -43,7 +47,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
     def validate_username(self, value):
-
         if not value.isalnum():
             raise serializers.ValidationError(
                 'Username should only contain alphanumeric characters.'
@@ -57,7 +60,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def validate_email(self, value):
-
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(
                 'Email already exists.'
@@ -101,6 +103,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
 
         profile = instance.profile
+
         request = self.context.get('request')
 
         if profile.profile_picture:
@@ -130,9 +133,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         }
 
 
+# ============================================================
+# User Login Serializer
+# ============================================================
+
 class LoginSerializer(serializers.Serializer):
 
     username = serializers.CharField()
+
     password = serializers.CharField(
         write_only=True
     )
@@ -164,3 +172,43 @@ class LoginSerializer(serializers.Serializer):
         attrs['access'] = str(refresh.access_token)
 
         return attrs
+
+
+# ============================================================
+# User Logout Serializer
+# ============================================================
+
+class LogoutSerializer(serializers.Serializer):
+
+    refresh = serializers.CharField(
+        required=True
+    )
+
+    def validate_refresh(self, value):
+
+        try:
+            RefreshToken(value)
+
+        except Exception:
+            raise serializers.ValidationError(
+                'Invalid or expired refresh token.'
+            )
+
+        return value
+
+    def save(self, **kwargs):
+
+        refresh_token = self.validated_data['refresh']
+
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+        except Exception:
+            raise serializers.ValidationError(
+                'Invalid or expired refresh token.'
+            )
+
+        return {
+            'message': 'User logged out successfully.'
+        }
