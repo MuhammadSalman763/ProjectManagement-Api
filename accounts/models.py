@@ -3,7 +3,6 @@ from django.db import models
 
 
 class Profile(models.Model):
-
     ROLE_CHOICES = [
         ('manager', 'Manager'),
         ('qa', 'QA'),
@@ -35,3 +34,26 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class Project(models.Model):
+    title = models.CharField(
+        max_length=200
+    )
+
+    description = models.TextField(
+        blank=True
+    )
+
+    start_date = models.DateField()
+
+    end_date = models.DateField()
+
+    team_members = models.ManyToManyField(
+        User,
+        related_name='projects',
+        blank=True
+    )
+
+    def __str__(self):
+        return self.title
