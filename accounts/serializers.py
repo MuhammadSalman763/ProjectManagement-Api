@@ -1,5 +1,9 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+
 from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from .models import Profile
 
 
@@ -39,6 +43,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
     def validate_username(self, value):
+
         if not value.isalnum():
             raise serializers.ValidationError(
                 'Username should only contain alphanumeric characters.'
@@ -48,16 +53,20 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Username already exists.'
             )
+
         return value
 
     def validate_email(self, value):
+
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(
                 'Email already exists.'
             )
+
         return value
 
     def create(self, validated_data):
+
         role = validated_data.pop(
             'role',
             'developer'
@@ -90,10 +99,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
     def to_representation(self, instance):
+
         profile = instance.profile
         request = self.context.get('request')
 
         if profile.profile_picture:
+
             picture_added = True
 
             if request:
@@ -102,7 +113,9 @@ class RegisterSerializer(serializers.ModelSerializer):
                 )
             else:
                 picture_url = profile.profile_picture.url
+
         else:
+
             picture_added = False
             picture_url = None
 
@@ -115,3 +128,39 @@ class RegisterSerializer(serializers.ModelSerializer):
             'profile_picture_added': picture_added,
             'profile_picture': picture_url,
         }
+
+
+class LoginSerializer(serializers.Serializer):
+
+    username = serializers.CharField()
+    password = serializers.CharField(
+        write_only=True
+    )
+
+    def validate(self, attrs):
+
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        user = authenticate(
+            username=username,
+            password=password
+        )
+
+        if user is None:
+            raise serializers.ValidationError(
+                'Invalid username or password.'
+            )
+
+        if not user.is_active:
+            raise serializers.ValidationError(
+                'User account is disabled.'
+            )
+
+        refresh = RefreshToken.for_user(user)
+
+        attrs['user'] = user
+        attrs['refresh'] = str(refresh)
+        attrs['access'] = str(refresh.access_token)
+
+        return attrs
