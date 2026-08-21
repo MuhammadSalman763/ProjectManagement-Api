@@ -17,6 +17,7 @@ from .views import (
     TaskAssignView,
     DocumentUploadAPIView,
     DocumentListView,
+    DocumentDetailView,
 )
 
 
@@ -133,4 +134,10 @@ urlpatterns = [
     DocumentListView.as_view(),
     name="document-list",
       ),
+    # Ticket 17: Document Detail
+    path(
+        "documents/<int:pk>/",
+        DocumentDetailView.as_view(),
+        name="document-detail",
+    ),
 ]

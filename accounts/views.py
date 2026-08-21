@@ -261,3 +261,14 @@ class DocumentListView(generics.ListAPIView):
         return Document.objects.filter(
             project__team_members=self.request.user
         ).distinct()
+
+
+# Ticket 17: Document Detail API
+class DocumentDetailView(generics.RetrieveAPIView):
+    serializer_class = DocumentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Document.objects.filter(
+            project__team_members=self.request.user
+        ).distinct()   
