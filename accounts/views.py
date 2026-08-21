@@ -139,3 +139,12 @@ class TaskCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
 
         serializer.save()    
+
+
+# Ticket 10: List Tasks API
+# Returns all tasks for authenticated users.
+
+class TaskListView(generics.ListAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
