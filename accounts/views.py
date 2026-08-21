@@ -370,3 +370,16 @@ class CommentListView(generics.ListAPIView):
             queryset = queryset.filter(project_id=project_id)
 
         return queryset
+
+# Ticket 22: Update Comment API
+class CommentUpdateView(generics.UpdateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return Comment.objects.filter(
+            Q(task__project__team_members=user)
+            | Q(project__team_members=user)
+        ).distinct()    

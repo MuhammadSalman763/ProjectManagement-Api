@@ -356,11 +356,8 @@ class DocumentSerializer(serializers.ModelSerializer):
 
 
 # Ticket 20: Comment Serializer
+# Comment Serializer
 class CommentSerializer(serializers.ModelSerializer):
-
-    author = serializers.PrimaryKeyRelatedField(
-        read_only=True
-    )
 
     class Meta:
         model = Comment
@@ -379,38 +376,28 @@ class CommentSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-
         task = attrs.get("task")
         project = attrs.get("project")
 
-        if not task and not project:
+        # For PATCH/UPDATE, use the existing values
+        # if task or project is not included in the request.
+        if self.instance:
+            if task is None:
+                task = self.instance.task
+
+            if project is None:
+                project = self.instance.project
+
+        # A comment must belong to either a task or a project.
+        if task is None and project is None:
             raise serializers.ValidationError(
                 "Comment must belong to a task or a project."
             )
 
-        if task and project:
+        # A comment cannot belong to both.
+        if task is not None and project is not None:
             raise serializers.ValidationError(
-                "Comment cannot belong to both task and project."
+                "Comment cannot belong to both a task and a project."
             )
-
-        request = self.context.get("request")
-
-        if request and request.user.is_authenticated:
-
-            if task:
-                if not task.project.team_members.filter(
-                    id=request.user.id
-                ).exists():
-                    raise serializers.ValidationError(
-                        "You must be a member of the project to comment on this task."
-                    )
-
-            if project:
-                if not project.team_members.filter(
-                    id=request.user.id
-                ).exists():
-                    raise serializers.ValidationError(
-                        "You must be a member of the project to comment on this project."
-                    )
 
         return attrs
