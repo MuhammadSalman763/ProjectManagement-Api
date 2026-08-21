@@ -4,7 +4,13 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Profile, Project,Task ,Document
+from .models import (
+    Profile,
+    Project,
+    Task,
+    Document,
+    Comment,
+)
 
 
 # User Registration Serializer
@@ -40,6 +46,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             "contact_number",
             "profile_picture",
         ]
+
         read_only_fields = ["id"]
 
     def validate_username(self, value):
@@ -97,6 +104,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         profile = instance.profile
+
         request = self.context.get("request")
 
         if profile.profile_picture:
@@ -108,6 +116,7 @@ class RegisterSerializer(serializers.ModelSerializer):
                 )
             else:
                 picture_url = profile.profile_picture.url
+
         else:
             picture_added = False
             picture_url = None
@@ -181,6 +190,7 @@ class LogoutSerializer(serializers.Serializer):
         try:
             token = RefreshToken(refresh_token)
             token.blacklist()
+
         except Exception:
             raise serializers.ValidationError(
                 "Invalid or expired refresh token."
@@ -193,8 +203,10 @@ class LogoutSerializer(serializers.Serializer):
 
 # Project Serializer
 class ProjectSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Project
+
         fields = [
             "id",
             "title",
@@ -212,6 +224,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         # For PATCH, use existing project dates
         if self.instance:
+
             if start_date is None:
                 start_date = self.instance.start_date
 
@@ -223,6 +236,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             start_date is not None
             and end_date is not None
         ):
+
             if end_date < start_date:
                 raise serializers.ValidationError(
                     {
@@ -235,13 +249,12 @@ class ProjectSerializer(serializers.ModelSerializer):
         return attrs
 
 
-
 # Task Serializer
-
 class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
+
         fields = [
             "id",
             "title",
@@ -250,6 +263,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "project",
             "assignee",
         ]
+
         read_only_fields = ["id"]
 
     def validate(self, attrs):
@@ -257,9 +271,11 @@ class TaskSerializer(serializers.ModelSerializer):
         assignee = attrs.get("assignee")
 
         if assignee and project:
+
             if not project.team_members.filter(
                 id=assignee.id
             ).exists():
+
                 raise serializers.ValidationError(
                     {
                         "assignee": (
@@ -272,7 +288,9 @@ class TaskSerializer(serializers.ModelSerializer):
         return attrs
 
 
+# Task Assignment Serializer
 class TaskAssignSerializer(serializers.Serializer):
+
     assignee = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all()
     )
@@ -280,7 +298,10 @@ class TaskAssignSerializer(serializers.Serializer):
     def validate_assignee(self, value):
         task = self.context["task"]
 
-        if not task.project.team_members.filter(id=value.id).exists():
+        if not task.project.team_members.filter(
+            id=value.id
+        ).exists():
+
             raise serializers.ValidationError(
                 "Assignee must be a member of the project team."
             )
@@ -289,18 +310,24 @@ class TaskAssignSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         task = self.context["task"]
+
         assignee = self.validated_data["assignee"]
 
         task.assignee = assignee
-        task.save(update_fields=["assignee"])
+
+        task.save(
+            update_fields=["assignee"]
+        )
 
         return task
 
 
-
+# Document Serializer
 class DocumentSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Document
+
         fields = [
             "id",
             "name",
@@ -309,19 +336,81 @@ class DocumentSerializer(serializers.ModelSerializer):
             "version",
             "project",
         ]
+
         read_only_fields = ["id"]
 
     def validate_project(self, value):
-        
         request = self.context.get("request")
 
         if request and request.user.is_authenticated:
+
             if not value.team_members.filter(
                 id=request.user.id
             ).exists():
+
                 raise serializers.ValidationError(
                     "You must be a member of the project to upload a document."
                 )
 
-        return value   
-    
+        return value
+
+
+# Ticket 20: Comment Serializer
+class CommentSerializer(serializers.ModelSerializer):
+
+    author = serializers.PrimaryKeyRelatedField(
+        read_only=True
+    )
+
+    class Meta:
+        model = Comment
+        fields = [
+            "id",
+            "text",
+            "author",
+            "created_at",
+            "task",
+            "project",
+        ]
+        read_only_fields = [
+            "id",
+            "author",
+            "created_at",
+        ]
+
+    def validate(self, attrs):
+
+        task = attrs.get("task")
+        project = attrs.get("project")
+
+        if not task and not project:
+            raise serializers.ValidationError(
+                "Comment must belong to a task or a project."
+            )
+
+        if task and project:
+            raise serializers.ValidationError(
+                "Comment cannot belong to both task and project."
+            )
+
+        request = self.context.get("request")
+
+        if request and request.user.is_authenticated:
+
+            if task:
+                if not task.project.team_members.filter(
+                    id=request.user.id
+                ).exists():
+                    raise serializers.ValidationError(
+                        "You must be a member of the project to comment on this task."
+                    )
+
+            if project:
+                if not project.team_members.filter(
+                    id=request.user.id
+                ).exists():
+                    raise serializers.ValidationError(
+                        "You must be a member of the project to comment on this project."
+                    )
+
+        return attrs

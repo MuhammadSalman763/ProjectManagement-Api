@@ -20,6 +20,7 @@ from .views import (
     DocumentDetailView,
     DocumentUpdateView,
     DocumentDeleteView,
+    CommentCreateView,
 )
 
 
@@ -154,5 +155,12 @@ urlpatterns = [
         "documents/<int:pk>/delete/",
         DocumentDeleteView.as_view(),
         name="document-delete",
+    ),
+
+    # Ticket 20: Create Comment
+    path(
+        "comments/",
+        CommentCreateView.as_view(),
+        name="comment-create",
     ),
 ]

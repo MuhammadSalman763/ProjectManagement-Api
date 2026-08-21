@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Project, Task, Document
+from .models import Project, Task, Document,Comment
 
 from .serializers import (
     RegisterSerializer,
@@ -14,6 +14,7 @@ from .serializers import (
     TaskSerializer,
     TaskAssignSerializer,
     DocumentSerializer,
+    CommentSerializer,
 )
 
 
@@ -331,3 +332,15 @@ class DocumentDeleteView(generics.DestroyAPIView):
             },
             status=status.HTTP_200_OK
         )  
+
+# Ticket 20: Create Comment API
+class CommentCreateView(generics.CreateAPIView):
+
+    queryset = Comment.objects.all()
+
+    serializer_class = CommentSerializer
+
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)    
