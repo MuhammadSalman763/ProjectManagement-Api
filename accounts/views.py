@@ -383,3 +383,27 @@ class CommentUpdateView(generics.UpdateAPIView):
             Q(task__project__team_members=user)
             | Q(project__team_members=user)
         ).distinct()    
+
+# Ticket 23: Delete Comment API
+class CommentDeleteView(generics.DestroyAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return Comment.objects.filter(
+            Q(task__project__team_members=user)
+            | Q(project__team_members=user)
+        ).distinct()
+
+    def destroy(self, request, *args, **kwargs):
+        comment = self.get_object()
+        comment.delete()
+
+        return Response(
+            {
+                "message": "Comment deleted successfully."
+            },
+            status=status.HTTP_200_OK,
+        )    

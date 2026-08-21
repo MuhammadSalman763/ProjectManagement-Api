@@ -23,6 +23,7 @@ from .views import (
     CommentCreateView,
     CommentListView,
     CommentUpdateView,
+    CommentDeleteView,
 )
 
 
@@ -178,4 +179,11 @@ urlpatterns = [
         CommentUpdateView.as_view(),
         name="comment-update",
     ),
+
+    # Ticket 23: Delete Comment API
+    path(
+    "comments/<int:pk>/delete/",
+    CommentDeleteView.as_view(),
+    name="comment-delete",
+),
 ]
