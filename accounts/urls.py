@@ -25,6 +25,8 @@ from .views import (
     CommentUpdateView,
     CommentDeleteView,
     CommentDetailView,
+    ProjectCommentsView,
+    CommentDetailView,
 )
 
 
@@ -189,6 +191,20 @@ urlpatterns = [
 ),
 
     # Ticket 24: Comment Detail API
+path(
+    "comments/<int:pk>/",
+    CommentDetailView.as_view(),
+    name="comment-detail",
+),
+
+# Ticket 25: Project Comments API
+path(
+    "projects/<int:project_id>/comments/",
+    ProjectCommentsView.as_view(),
+    name="project-comments",
+),
+
+# Ticket 26: Comment Detail API
 path(
     "comments/<int:pk>/",
     CommentDetailView.as_view(),

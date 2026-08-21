@@ -356,8 +356,8 @@ class CommentListView(generics.ListAPIView):
         user = self.request.user
 
         queryset = Comment.objects.filter(
-            Q(task__project__team_members=user)
-            | Q(project__team_members=user)
+            Q(task__project__team_members=user) |
+            Q(project__team_members=user)
         ).distinct()
 
         task_id = self.request.query_params.get("task")
@@ -420,4 +420,32 @@ class CommentDetailView(generics.RetrieveAPIView):
         return Comment.objects.filter(
             Q(task__project__team_members=user)
             | Q(project__team_members=user)
-        ).distinct()    
+        ).distinct()  
+
+# Ticket 25: Project Comments API
+class ProjectCommentsView(generics.ListAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        project_id = self.kwargs["project_id"]
+        user = self.request.user
+
+        return Comment.objects.filter(
+            project_id=project_id,
+            project__team_members=user,
+        ).distinct()      
+
+
+ # Ticket 26: Comment Detail API
+class CommentDetailView(generics.RetrieveAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return Comment.objects.filter(
+            Q(task__project__team_members=user)
+            | Q(project__team_members=user)
+        ).distinct()       
