@@ -4,57 +4,53 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Profile
+from .models import Profile, Project,Task 
 
 
-# ============================================================
 # User Registration Serializer
-# ============================================================
-
 class RegisterSerializer(serializers.ModelSerializer):
-
     password = serializers.CharField(
         write_only=True,
-        min_length=8
+        min_length=8,
     )
 
     role = serializers.ChoiceField(
         choices=Profile.ROLE_CHOICES,
-        default='developer'
+        default="developer",
     )
 
     contact_number = serializers.IntegerField(
         required=False,
-        allow_null=True
+        allow_null=True,
     )
 
     profile_picture = serializers.ImageField(
         required=False,
-        allow_null=True
+        allow_null=True,
     )
 
     class Meta:
         model = User
         fields = [
-            'id',
-            'username',
-            'email',
-            'password',
-            'role',
-            'contact_number',
-            'profile_picture',
+            "id",
+            "username",
+            "email",
+            "password",
+            "role",
+            "contact_number",
+            "profile_picture",
         ]
-        read_only_fields = ['id']
+        read_only_fields = ["id"]
 
     def validate_username(self, value):
         if not value.isalnum():
             raise serializers.ValidationError(
-                'Username should only contain alphanumeric characters.'
+                "Username should only contain alphanumeric characters."
             )
 
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError(
-                'Username already exists.'
+                "Username already exists."
             )
 
         return value
@@ -62,52 +58,48 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(
-                'Email already exists.'
+                "Email already exists."
             )
 
         return value
 
     def create(self, validated_data):
-
         role = validated_data.pop(
-            'role',
-            'developer'
+            "role",
+            "developer",
         )
 
         contact_number = validated_data.pop(
-            'contact_number',
-            None
+            "contact_number",
+            None,
         )
 
         profile_picture = validated_data.pop(
-            'profile_picture',
-            None
+            "profile_picture",
+            None,
         )
 
-        password = validated_data.pop('password')
+        password = validated_data.pop("password")
 
         user = User.objects.create_user(
             password=password,
-            **validated_data
+            **validated_data,
         )
 
         Profile.objects.create(
             user=user,
             role=role,
             contact_number=contact_number,
-            profile_picture=profile_picture
+            profile_picture=profile_picture,
         )
 
         return user
 
     def to_representation(self, instance):
-
         profile = instance.profile
-
-        request = self.context.get('request')
+        request = self.context.get("request")
 
         if profile.profile_picture:
-
             picture_added = True
 
             if request:
@@ -116,123 +108,107 @@ class RegisterSerializer(serializers.ModelSerializer):
                 )
             else:
                 picture_url = profile.profile_picture.url
-
         else:
-
             picture_added = False
             picture_url = None
 
         return {
-            'id': instance.id,
-            'username': instance.username,
-            'email': instance.email,
-            'role': profile.role,
-            'contact_number': profile.contact_number,
-            'profile_picture_added': picture_added,
-            'profile_picture': picture_url,
+            "id": instance.id,
+            "username": instance.username,
+            "email": instance.email,
+            "role": profile.role,
+            "contact_number": profile.contact_number,
+            "profile_picture_added": picture_added,
+            "profile_picture": picture_url,
         }
 
 
-# ============================================================
 # User Login Serializer
-# ============================================================
-
 class LoginSerializer(serializers.Serializer):
-
     username = serializers.CharField()
 
     password = serializers.CharField(
-        write_only=True
+        write_only=True,
     )
 
     def validate(self, attrs):
-
-        username = attrs.get('username')
-        password = attrs.get('password')
+        username = attrs.get("username")
+        password = attrs.get("password")
 
         user = authenticate(
             username=username,
-            password=password
+            password=password,
         )
 
         if user is None:
             raise serializers.ValidationError(
-                'Invalid username or password.'
+                "Invalid username or password."
             )
 
         if not user.is_active:
             raise serializers.ValidationError(
-                'User account is disabled.'
+                "User account is disabled."
             )
 
         refresh = RefreshToken.for_user(user)
 
-        attrs['user'] = user
-        attrs['refresh'] = str(refresh)
-        attrs['access'] = str(refresh.access_token)
+        attrs["user"] = user
+        attrs["refresh"] = str(refresh)
+        attrs["access"] = str(refresh.access_token)
 
         return attrs
 
 
-# ============================================================
 # User Logout Serializer
-# ============================================================
-
 class LogoutSerializer(serializers.Serializer):
-
     refresh = serializers.CharField(
-        required=True
+        required=True,
     )
 
     def validate_refresh(self, value):
-
         try:
             RefreshToken(value)
-
         except Exception:
             raise serializers.ValidationError(
-                'Invalid or expired refresh token.'
+                "Invalid or expired refresh token."
             )
 
         return value
 
     def save(self, **kwargs):
-
-        refresh_token = self.validated_data['refresh']
+        refresh_token = self.validated_data["refresh"]
 
         try:
             token = RefreshToken(refresh_token)
             token.blacklist()
-
         except Exception:
             raise serializers.ValidationError(
-                'Invalid or expired refresh token.'
+                "Invalid or expired refresh token."
             )
 
         return {
-            'message': 'User logged out successfully.'
+            "message": "User logged out successfully.",
         }
-from .models import Project
 
 
-
+# Project Serializer
 class ProjectSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Project
         fields = [
-            'id',
-            'title',
-            'description',
-            'start_date',
-            'end_date',
-            'team_members',
+            "id",
+            "title",
+            "description",
+            "start_date",
+            "end_date",
+            "team_members",
         ]
-        read_only_fields = ['id']
+
+        read_only_fields = ["id"]
 
     def validate(self, attrs):
-        start_date = attrs.get('start_date')
-        end_date = attrs.get('end_date')
+        start_date = attrs.get("start_date")
+        end_date = attrs.get("end_date")
 
         # For PATCH, use existing project dates
         if self.instance:
@@ -243,10 +219,54 @@ class ProjectSerializer(serializers.ModelSerializer):
                 end_date = self.instance.end_date
 
         # Validate only when both dates are available
-        if start_date is not None and end_date is not None:
+        if (
+            start_date is not None
+            and end_date is not None
+        ):
             if end_date < start_date:
-                raise serializers.ValidationError({
-                    'end_date': 'End date cannot be before start date.'
-                })
+                raise serializers.ValidationError(
+                    {
+                        "end_date": (
+                            "End date cannot be before start date."
+                        )
+                    }
+                )
+
+        return attrs
+
+
+
+# Task Serializer
+
+class TaskSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Task
+        fields = [
+            "id",
+            "title",
+            "description",
+            "status",
+            "project",
+            "assignee",
+        ]
+        read_only_fields = ["id"]
+
+    def validate(self, attrs):
+        project = attrs.get("project")
+        assignee = attrs.get("assignee")
+
+        if assignee and project:
+            if not project.team_members.filter(
+                id=assignee.id
+            ).exists():
+                raise serializers.ValidationError(
+                    {
+                        "assignee": (
+                            "Assignee must be a member "
+                            "of the project team."
+                        )
+                    }
+                )
 
         return attrs

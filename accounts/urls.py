@@ -9,6 +9,7 @@ from .views import (
     ProjectDetailView,
     ProjectUpdateView,
     ProjectDeleteView,
+    TaskCreateView,
 )
 
 
@@ -68,4 +69,13 @@ urlpatterns = [
         ProjectDeleteView.as_view(),
         name="project-delete",
     ),
+
+
+    # Ticket 9: Task creation
+
+     path(
+    "tasks/",
+    TaskCreateView.as_view(),
+    name="task-create",
+     ),
 ]

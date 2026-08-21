@@ -3,12 +3,13 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Project
+from .models import Project,Task
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
     LogoutSerializer,
     ProjectSerializer,
+    TaskSerializer,
 )
 
 
@@ -123,3 +124,18 @@ class ProjectDeleteView(generics.DestroyAPIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+# Ticket 9: Create Task API
+
+class TaskCreateView(generics.CreateAPIView):
+
+    queryset = Task.objects.all()
+
+    serializer_class = TaskSerializer
+
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+
+        serializer.save()    
