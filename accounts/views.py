@@ -11,8 +11,9 @@ from .models import (
     Task,
     Document,
     Comment,
+    TimelineEvent,
+    Notification,
 )
-
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
@@ -22,6 +23,8 @@ from .serializers import (
     TaskAssignSerializer,
     DocumentSerializer,
     CommentSerializer,
+    TimelineEventSerializer,
+    NotificationSerializer,
 )
 
 
@@ -484,3 +487,63 @@ class CommentUpdateView(generics.UpdateAPIView):
             },
             status=status.HTTP_200_OK,
         )              
+
+
+
+# Ticket 25: List Timeline Events API
+class TimelineEventListView(generics.ListAPIView):
+    serializer_class = TimelineEventSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return TimelineEvent.objects.filter(
+            project__team_members=user
+        ).select_related(
+            "project",
+            "user"
+        ).order_by(
+            "-created_at"
+        )
+
+
+# Ticket 26: Notifications API
+class NotificationListView(generics.ListAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Notification.objects.filter(
+            user=self.request.user
+        ).order_by(
+            "-created_at"
+        )
+
+
+# Ticket 27: Mark Notification as Read API
+class NotificationMarkReadView(generics.UpdateAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Notification.objects.filter(
+            user=self.request.user
+        )
+
+    def update(self, request, *args, **kwargs):
+        notification = self.get_object()
+
+        notification.is_read = True
+        notification.save(update_fields=["is_read"])
+
+        return Response(
+            {
+                "message": "Notification marked as read.",
+                "notification": NotificationSerializer(
+                    notification
+                ).data,
+            },
+            status=status.HTTP_200_OK
+        )    
+        

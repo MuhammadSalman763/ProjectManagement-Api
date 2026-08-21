@@ -28,6 +28,9 @@ from .views import (
     ProjectCommentsView,
     CommentDetailView,
     CommentUpdateView,
+    TimelineEventListView,
+    NotificationListView,
+    NotificationMarkReadView
 )
 
 
@@ -218,4 +221,26 @@ path(
     CommentUpdateView.as_view(),
     name="comment-update",
 ),
+
+# Ticket 25: Timeline Events
+path(
+    "timeline/",
+    TimelineEventListView.as_view(),
+    name="timeline-list",
+),
+
+# Ticket 26: Notifications
+path(
+    "notifications/",
+    NotificationListView.as_view(),
+    name="notification-list",
+),
+
+# Ticket 27: Mark Notification as Read
+path(
+    "notifications/<int:pk>/mark_read/",
+    NotificationMarkReadView.as_view(),
+    name="notification-mark-read",
+),
+
 ]

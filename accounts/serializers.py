@@ -10,6 +10,8 @@ from .models import (
     Task,
     Document,
     Comment,
+    TimelineEvent,
+    Notification,
 )
 
 
@@ -46,7 +48,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             "contact_number",
             "profile_picture",
         ]
-
         read_only_fields = ["id"]
 
     def validate_username(self, value):
@@ -71,21 +72,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        role = validated_data.pop(
-            "role",
-            "developer",
-        )
-
-        contact_number = validated_data.pop(
-            "contact_number",
-            None,
-        )
-
-        profile_picture = validated_data.pop(
-            "profile_picture",
-            None,
-        )
-
+        role = validated_data.pop("role", "developer")
+        contact_number = validated_data.pop("contact_number", None)
+        profile_picture = validated_data.pop("profile_picture", None)
         password = validated_data.pop("password")
 
         user = User.objects.create_user(
@@ -104,7 +93,6 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         profile = instance.profile
-
         request = self.context.get("request")
 
         if profile.profile_picture:
@@ -116,7 +104,6 @@ class RegisterSerializer(serializers.ModelSerializer):
                 )
             else:
                 picture_url = profile.profile_picture.url
-
         else:
             picture_added = False
             picture_url = None
@@ -190,7 +177,6 @@ class LogoutSerializer(serializers.Serializer):
         try:
             token = RefreshToken(refresh_token)
             token.blacklist()
-
         except Exception:
             raise serializers.ValidationError(
                 "Invalid or expired refresh token."
@@ -203,10 +189,8 @@ class LogoutSerializer(serializers.Serializer):
 
 # Project Serializer
 class ProjectSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Project
-
         fields = [
             "id",
             "title",
@@ -215,28 +199,23 @@ class ProjectSerializer(serializers.ModelSerializer):
             "end_date",
             "team_members",
         ]
-
         read_only_fields = ["id"]
 
     def validate(self, attrs):
         start_date = attrs.get("start_date")
         end_date = attrs.get("end_date")
 
-        # For PATCH, use existing project dates
         if self.instance:
-
             if start_date is None:
                 start_date = self.instance.start_date
 
             if end_date is None:
                 end_date = self.instance.end_date
 
-        # Validate only when both dates are available
         if (
             start_date is not None
             and end_date is not None
         ):
-
             if end_date < start_date:
                 raise serializers.ValidationError(
                     {
@@ -251,10 +230,8 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 # Task Serializer
 class TaskSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Task
-
         fields = [
             "id",
             "title",
@@ -263,7 +240,6 @@ class TaskSerializer(serializers.ModelSerializer):
             "project",
             "assignee",
         ]
-
         read_only_fields = ["id"]
 
     def validate(self, attrs):
@@ -271,11 +247,9 @@ class TaskSerializer(serializers.ModelSerializer):
         assignee = attrs.get("assignee")
 
         if assignee and project:
-
             if not project.team_members.filter(
                 id=assignee.id
             ).exists():
-
                 raise serializers.ValidationError(
                     {
                         "assignee": (
@@ -290,7 +264,6 @@ class TaskSerializer(serializers.ModelSerializer):
 
 # Task Assignment Serializer
 class TaskAssignSerializer(serializers.Serializer):
-
     assignee = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all()
     )
@@ -301,7 +274,6 @@ class TaskAssignSerializer(serializers.Serializer):
         if not task.project.team_members.filter(
             id=value.id
         ).exists():
-
             raise serializers.ValidationError(
                 "Assignee must be a member of the project team."
             )
@@ -310,11 +282,9 @@ class TaskAssignSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         task = self.context["task"]
-
         assignee = self.validated_data["assignee"]
 
         task.assignee = assignee
-
         task.save(
             update_fields=["assignee"]
         )
@@ -324,10 +294,8 @@ class TaskAssignSerializer(serializers.Serializer):
 
 # Document Serializer
 class DocumentSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Document
-
         fields = [
             "id",
             "name",
@@ -336,29 +304,25 @@ class DocumentSerializer(serializers.ModelSerializer):
             "version",
             "project",
         ]
-
         read_only_fields = ["id"]
 
     def validate_project(self, value):
         request = self.context.get("request")
 
         if request and request.user.is_authenticated:
-
             if not value.team_members.filter(
                 id=request.user.id
             ).exists():
-
                 raise serializers.ValidationError(
-                    "You must be a member of the project to upload a document."
+                    "You must be a member of the project "
+                    "to upload a document."
                 )
 
         return value
 
 
-# Ticket 20: Comment Serializer
 # Comment Serializer
 class CommentSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Comment
         fields = [
@@ -379,8 +343,6 @@ class CommentSerializer(serializers.ModelSerializer):
         task = attrs.get("task")
         project = attrs.get("project")
 
-        # For PATCH/UPDATE, use the existing values
-        # if task or project is not included in the request.
         if self.instance:
             if task is None:
                 task = self.instance.task
@@ -388,16 +350,49 @@ class CommentSerializer(serializers.ModelSerializer):
             if project is None:
                 project = self.instance.project
 
-        # A comment must belong to either a task or a project.
         if task is None and project is None:
             raise serializers.ValidationError(
                 "Comment must belong to a task or a project."
             )
 
-        # A comment cannot belong to both.
         if task is not None and project is not None:
             raise serializers.ValidationError(
                 "Comment cannot belong to both a task and a project."
             )
 
         return attrs
+
+
+# Notification Serializer
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = [
+            "id",
+            "message",
+            "is_read",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "message",
+            "created_at",
+        ]
+
+
+# Timeline Event Serializer
+class TimelineEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TimelineEvent
+        fields = [
+            "id",
+            "project",
+            "user",
+            "event_type",
+            "description",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "created_at",
+        ]
