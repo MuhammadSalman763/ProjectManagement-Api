@@ -174,3 +174,47 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.text[:50]
+
+class TimelineEvent(models.Model):
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="timeline_events"
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="timeline_events"
+    )
+    event_type = models.CharField(
+        max_length=100
+    )
+    description = models.TextField(
+        blank=True
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.event_type    
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notifications"
+    )
+    message = models.TextField()
+    is_read = models.BooleanField(
+        default=False
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.message    
+
+    
