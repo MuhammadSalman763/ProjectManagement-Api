@@ -5,9 +5,12 @@ from .views import (
     LoginView,
     LogoutView,
     ProjectCreateView,
+    ProjectListView
 )
 
+
 urlpatterns = [
+
     # User registration
     path(
         'register/',
@@ -34,5 +37,11 @@ urlpatterns = [
         'projects/',
         ProjectCreateView.as_view(),
         name='project-create'
+    ),
+    # Project list
+    path(
+        'projects/list/',
+        ProjectListView.as_view(),
+        name='project-list'
     ),
 ]
