@@ -270,3 +270,29 @@ class TaskSerializer(serializers.ModelSerializer):
                 )
 
         return attrs
+
+
+class TaskAssignSerializer(serializers.Serializer):
+    assignee = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all()
+    )
+
+    def validate_assignee(self, value):
+        task = self.context["task"]
+
+        if not task.project.team_members.filter(id=value.id).exists():
+            raise serializers.ValidationError(
+                "Assignee must be a member of the project team."
+            )
+
+        return value
+
+    def save(self, **kwargs):
+        task = self.context["task"]
+        assignee = self.validated_data["assignee"]
+
+        task.assignee = assignee
+        task.save(update_fields=["assignee"])
+
+        return task
+    

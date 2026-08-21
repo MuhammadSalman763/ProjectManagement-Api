@@ -9,6 +9,7 @@ from .serializers import (
     LoginSerializer,
     LogoutSerializer,
     ProjectSerializer,
+    TaskAssignSerializer,
     TaskSerializer,
 )
 
@@ -186,3 +187,33 @@ class TaskDeleteView(generics.DestroyAPIView):
             },
             status=status.HTTP_200_OK
         )    
+
+class TaskAssignView(generics.GenericAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskAssignSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        task = self.get_object()
+
+        serializer = self.get_serializer(
+            data=request.data,
+            context={"task": task}
+        )
+        serializer.is_valid(raise_exception=True)
+        task = serializer.save()
+
+        return Response(
+            {
+                "message": "Task assigned successfully.",
+                "task": {
+                    "id": task.id,
+                    "title": task.title,
+                    "assignee": {
+                        "id": task.assignee.id,
+                        "username": task.assignee.username,
+                    } if task.assignee else None,
+                },
+            },
+            status=status.HTTP_200_OK
+        )
