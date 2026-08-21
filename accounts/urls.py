@@ -7,56 +7,65 @@ from .views import (
     ProjectCreateView,
     ProjectListView,
     ProjectDetailView,
-    ProjectUpdateView
+    ProjectUpdateView,
+    ProjectDeleteView,
 )
 
 
 urlpatterns = [
-
     # User registration
     path(
-        'register/',
+        "register/",
         RegisterView.as_view(),
-        name='register'
+        name="register",
     ),
 
     # User login
     path(
-        'login/',
+        "login/",
         LoginView.as_view(),
-        name='login'
+        name="login",
     ),
 
     # User logout
     path(
-        'logout/',
+        "logout/",
         LogoutView.as_view(),
-        name='logout'
+        name="logout",
     ),
 
     # Project creation
     path(
-        'projects/',
+        "projects/",
         ProjectCreateView.as_view(),
-        name='project-create'
+        name="project-create",
     ),
+
     # Project list
     path(
-        'projects/list/',
+        "projects/list/",
         ProjectListView.as_view(),
-        name='project-list'
+        name="project-list",
     ),
+
     # Project detail
     path(
-        'projects/<int:pk>/',
+        "projects/<int:pk>/",
         ProjectDetailView.as_view(),
-        name='project-detail'
+        name="project-detail",
     ),
 
     # Project update
     path(
-        'projects/<int:pk>/update/',
+        "projects/<int:pk>/update/",
         ProjectUpdateView.as_view(),
-        name='project-update'
+        name="project-update",
+    ),
+
+    # Project delete
+    path(
+        "projects/<int:pk>/delete/",
+        ProjectDeleteView.as_view(),
+        name="project-delete",
     ),
 ]

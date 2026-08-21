@@ -16,33 +16,22 @@ from .serializers import (
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
-    parser_classes = [
-        MultiPartParser,
-        FormParser,
-    ]
+    parser_classes = [MultiPartParser, FormParser]
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data
-        )
-
-        serializer.is_valid(
-            raise_exception=True
-        )
-
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
         return Response(
             {
-                'message': 'User registered successfully.',
-                'user': RegisterSerializer(
+                "message": "User registered successfully.",
+                "user": RegisterSerializer(
                     user,
-                    context={
-                        'request': request
-                    }
-                ).data
+                    context={"request": request},
+                ).data,
             },
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
 
 
@@ -52,29 +41,24 @@ class LoginView(generics.GenericAPIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data
-        )
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        serializer.is_valid(
-            raise_exception=True
-        )
-
-        user = serializer.validated_data['user']
+        user = serializer.validated_data["user"]
 
         return Response(
             {
-                'message': 'Login successful.',
-                'access': serializer.validated_data['access'],
-                'refresh': serializer.validated_data['refresh'],
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                    'role': user.profile.role,
-                }
+                "message": "Login successful.",
+                "access": serializer.validated_data["access"],
+                "refresh": serializer.validated_data["refresh"],
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "role": user.profile.role,
+                },
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
 
@@ -84,21 +68,15 @@ class LogoutView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data
-        )
-
-        serializer.is_valid(
-            raise_exception=True
-        )
-
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         serializer.save()
 
         return Response(
             {
-                'message': 'User logged out successfully.'
+                "message": "User logged out successfully.",
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
 
@@ -109,19 +87,39 @@ class ProjectCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
+# Project List API
 class ProjectListView(generics.ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
 
 
+# Project Detail API
 class ProjectDetailView(generics.RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
 
 
+# Project Update API
 class ProjectUpdateView(generics.UpdateAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
+
+
+# Project Delete API
+class ProjectDeleteView(generics.DestroyAPIView):
+    queryset = Project.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        project = self.get_object()
+        project.delete()
+
+        return Response(
+            {
+                "message": "Project deleted successfully."
+            },
+            status=status.HTTP_200_OK
+        )
