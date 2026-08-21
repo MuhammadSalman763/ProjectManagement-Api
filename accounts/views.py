@@ -272,3 +272,40 @@ class DocumentDetailView(generics.RetrieveAPIView):
         return Document.objects.filter(
             project__team_members=self.request.user
         ).distinct()   
+
+# Ticket 18: Update Document API
+class DocumentUpdateView(generics.UpdateAPIView):
+    serializer_class = DocumentSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_queryset(self):
+        return Document.objects.filter(
+            project__team_members=self.request.user
+        ).distinct()
+
+    def update(self, request, *args, **kwargs):
+        partial = request.method == "PATCH"
+
+        instance = self.get_object()
+
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=partial,
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        document = serializer.save()
+
+        return Response(
+            {
+                "message": "Document updated successfully.",
+                "document": DocumentSerializer(
+                    document,
+                    context={"request": request},
+                ).data,
+            },
+            status=status.HTTP_200_OK,
+        )    

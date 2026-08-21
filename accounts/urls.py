@@ -18,6 +18,7 @@ from .views import (
     DocumentUploadAPIView,
     DocumentListView,
     DocumentDetailView,
+    DocumentUpdateView,
 )
 
 
@@ -139,5 +140,11 @@ urlpatterns = [
         "documents/<int:pk>/",
         DocumentDetailView.as_view(),
         name="document-detail",
+    ),
+    # Ticket 18: Update Document
+    path(
+        "documents/<int:pk>/update/",
+        DocumentUpdateView.as_view(),
+        name="document-update",
     ),
 ]
