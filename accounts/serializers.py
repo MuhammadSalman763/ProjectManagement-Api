@@ -215,6 +215,7 @@ class LogoutSerializer(serializers.Serializer):
 from .models import Project
 
 
+
 class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -233,9 +234,19 @@ class ProjectSerializer(serializers.ModelSerializer):
         start_date = attrs.get('start_date')
         end_date = attrs.get('end_date')
 
-        if end_date < start_date:
-            raise serializers.ValidationError({
-                'end_date': 'End date cannot be before start date.'
-            })
+        # For PATCH, use existing project dates
+        if self.instance:
+            if start_date is None:
+                start_date = self.instance.start_date
 
-        return attrs    
+            if end_date is None:
+                end_date = self.instance.end_date
+
+        # Validate only when both dates are available
+        if start_date is not None and end_date is not None:
+            if end_date < start_date:
+                raise serializers.ValidationError({
+                    'end_date': 'End date cannot be before start date.'
+                })
+
+        return attrs

@@ -7,6 +7,7 @@ from .views import (
     ProjectCreateView,
     ProjectListView,
     ProjectDetailView,
+    ProjectUpdateView
 )
 
 
@@ -50,5 +51,12 @@ urlpatterns = [
         'projects/<int:pk>/',
         ProjectDetailView.as_view(),
         name='project-detail'
+    ),
+
+    # Project update
+    path(
+        'projects/<int:pk>/update/',
+        ProjectUpdateView.as_view(),
+        name='project-update'
     ),
 ]
