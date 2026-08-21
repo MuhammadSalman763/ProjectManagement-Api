@@ -167,3 +167,22 @@ class TaskUpdateView(generics.UpdateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
+
+
+# Ticket 13: Delete Task API
+# Allows authenticated users to delete an existing task.
+
+class TaskDeleteView(generics.DestroyAPIView):
+    queryset = Task.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        task = self.get_object()
+        task.delete()
+
+        return Response(
+            {
+                "message": "Task deleted successfully."
+            },
+            status=status.HTTP_200_OK
+        )    

@@ -13,6 +13,7 @@ from .views import (
     TaskListView,
     TaskDetailView,
     TaskUpdateView,
+    TaskDeleteView
 )
 
 
@@ -104,5 +105,12 @@ urlpatterns = [
         "tasks/<int:pk>/update/",
         TaskUpdateView.as_view(),
         name="task-update",
+    ),
+
+    # Ticket 13: Task delete
+    path(
+        "tasks/<int:pk>/delete/",
+        TaskDeleteView.as_view(),
+        name="task-delete",
     ),
 ]
