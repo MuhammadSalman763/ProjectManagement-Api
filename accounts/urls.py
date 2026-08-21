@@ -27,6 +27,7 @@ from .views import (
     CommentDetailView,
     ProjectCommentsView,
     CommentDetailView,
+    CommentUpdateView,
 )
 
 
@@ -209,5 +210,12 @@ path(
     "comments/<int:pk>/",
     CommentDetailView.as_view(),
     name="comment-detail",
+),
+
+# Ticket 27: Update Comment API
+path(
+    "comments/<int:pk>/update/",
+    CommentUpdateView.as_view(),
+    name="comment-update",
 ),
 ]

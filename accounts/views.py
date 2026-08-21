@@ -448,4 +448,39 @@ class CommentDetailView(generics.RetrieveAPIView):
         return Comment.objects.filter(
             Q(task__project__team_members=user)
             | Q(project__team_members=user)
-        ).distinct()       
+        ).distinct() 
+
+
+# Ticket 27: Update Comment API
+class CommentUpdateView(generics.UpdateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return Comment.objects.filter(
+            Q(task__project__team_members=user)
+            | Q(project__team_members=user)
+        ).distinct()
+
+    def update(self, request, *args, **kwargs):
+        partial = request.method == "PATCH"
+        instance = self.get_object()
+
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=partial,
+        )
+
+        serializer.is_valid(raise_exception=True)
+        comment = serializer.save()
+
+        return Response(
+            {
+                "message": "Comment updated successfully.",
+                "comment": CommentSerializer(comment).data,
+            },
+            status=status.HTTP_200_OK,
+        )              
