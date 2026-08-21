@@ -158,4 +158,12 @@ class TaskDetailView(generics.RetrieveAPIView):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
-    
+
+
+# Ticket 12: Update Task API
+# Allows authenticated users to update an existing task.
+
+class TaskUpdateView(generics.UpdateAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
