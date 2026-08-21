@@ -16,6 +16,7 @@ from .views import (
     TaskDeleteView,
     TaskAssignView,
     DocumentUploadAPIView,
+    DocumentListView,
 )
 
 
@@ -125,4 +126,11 @@ urlpatterns = [
         DocumentUploadAPIView.as_view(),
         name="document-upload",
     ),
+
+    # Ticket 16: List Documents
+     path(
+    "documents/list/",
+    DocumentListView.as_view(),
+    name="document-list",
+      ),
 ]

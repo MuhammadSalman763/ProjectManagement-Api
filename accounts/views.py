@@ -4,7 +4,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Project, Task
+from .models import Project, Task, Document
+
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
@@ -127,7 +128,7 @@ class ProjectDeleteView(generics.DestroyAPIView):
             {
                 "message": "Project deleted successfully."
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
 
@@ -176,7 +177,7 @@ class TaskDeleteView(generics.DestroyAPIView):
             {
                 "message": "Task deleted successfully."
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
 
@@ -191,7 +192,7 @@ class TaskAssignView(generics.GenericAPIView):
 
         serializer = self.get_serializer(
             data=request.data,
-            context={"task": task}
+            context={"task": task},
         )
 
         serializer.is_valid(raise_exception=True)
@@ -207,10 +208,12 @@ class TaskAssignView(generics.GenericAPIView):
                     "assignee": {
                         "id": task.assignee.id,
                         "username": task.assignee.username,
-                    } if task.assignee else None,
+                    }
+                    if task.assignee
+                    else None,
                 },
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
 
@@ -222,7 +225,7 @@ class DocumentUploadAPIView(APIView):
     def post(self, request):
         serializer = DocumentSerializer(
             data=request.data,
-            context={"request": request}
+            context={"request": request},
         )
 
         serializer.is_valid(raise_exception=True)
@@ -234,8 +237,27 @@ class DocumentUploadAPIView(APIView):
                 "message": "Document uploaded successfully.",
                 "document": DocumentSerializer(
                     document,
-                    context={"request": request}
-                ).data
+                    context={"request": request},
+                ).data,
             },
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
+
+
+# Ticket 16: List Documents API
+class DocumentListView(generics.ListAPIView):
+    serializer_class = DocumentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        project_id = self.request.query_params.get("project")
+
+        if project_id:
+            return Document.objects.filter(
+                project_id=project_id,
+                project__team_members=self.request.user,
+            )
+
+        return Document.objects.filter(
+            project__team_members=self.request.user
+        ).distinct()
