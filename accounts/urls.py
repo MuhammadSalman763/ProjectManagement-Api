@@ -19,6 +19,7 @@ from .views import (
     DocumentListView,
     DocumentDetailView,
     DocumentUpdateView,
+    DocumentDeleteView,
 )
 
 
@@ -146,5 +147,12 @@ urlpatterns = [
         "documents/<int:pk>/update/",
         DocumentUpdateView.as_view(),
         name="document-update",
+    ),
+
+    # Ticket 19: Delete Document
+    path(
+        "documents/<int:pk>/delete/",
+        DocumentDeleteView.as_view(),
+        name="document-delete",
     ),
 ]

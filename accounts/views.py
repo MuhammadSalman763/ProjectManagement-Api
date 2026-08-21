@@ -309,3 +309,25 @@ class DocumentUpdateView(generics.UpdateAPIView):
             },
             status=status.HTTP_200_OK,
         )    
+
+
+  # Ticket 19: Delete Document API
+class DocumentDeleteView(generics.DestroyAPIView):
+    serializer_class = DocumentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Document.objects.filter(
+            project__team_members=self.request.user
+        ).distinct()
+
+    def destroy(self, request, *args, **kwargs):
+        document = self.get_object()
+        document.delete()
+
+        return Response(
+            {
+                "message": "Document deleted successfully."
+            },
+            status=status.HTTP_200_OK
+        )  
