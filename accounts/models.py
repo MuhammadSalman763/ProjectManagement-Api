@@ -3,7 +3,6 @@ from django.db import models
 
 
 class Profile(models.Model):
-
     ROLE_CHOICES = [
         ("manager", "Manager"),
         ("qa", "QA"),
@@ -38,7 +37,6 @@ class Profile(models.Model):
 
 
 class Project(models.Model):
-
     title = models.CharField(
         max_length=200
     )
@@ -62,7 +60,6 @@ class Project(models.Model):
 
 
 class Task(models.Model):
-
     STATUS_CHOICES = [
         ("open", "Open"),
         ("review", "Review"),
@@ -101,3 +98,46 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class VersionField(models.Field):
+    description = "Custom document version field"
+
+    def db_type(self, connection):
+        return "varchar(50)"
+
+    def from_db_value(self, value, expression, connection):
+        return value
+
+    def to_python(self, value):
+        if value is None:
+            return value
+
+        return str(value)
+
+
+class Document(models.Model):
+    name = models.CharField(
+        max_length=255
+    )
+
+    description = models.TextField(
+        blank=True
+    )
+
+    file = models.FileField(
+        upload_to="documents/"
+    )
+
+    version = VersionField(
+        default="1.0"
+    )
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="documents"
+    )
+
+    def __str__(self):
+        return self.name

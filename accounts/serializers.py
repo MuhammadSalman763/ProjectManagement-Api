@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Profile, Project,Task 
+from .models import Profile, Project,Task ,Document
 
 
 # User Registration Serializer
@@ -295,4 +295,33 @@ class TaskAssignSerializer(serializers.Serializer):
         task.save(update_fields=["assignee"])
 
         return task
+
+
+
+class DocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Document
+        fields = [
+            "id",
+            "name",
+            "description",
+            "file",
+            "version",
+            "project",
+        ]
+        read_only_fields = ["id"]
+
+    def validate_project(self, value):
+        
+        request = self.context.get("request")
+
+        if request and request.user.is_authenticated:
+            if not value.team_members.filter(
+                id=request.user.id
+            ).exists():
+                raise serializers.ValidationError(
+                    "You must be a member of the project to upload a document."
+                )
+
+        return value   
     

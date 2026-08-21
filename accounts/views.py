@@ -2,15 +2,17 @@ from rest_framework import generics, status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import Project,Task
+from .models import Project, Task
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
     LogoutSerializer,
     ProjectSerializer,
-    TaskAssignSerializer,
     TaskSerializer,
+    TaskAssignSerializer,
+    DocumentSerializer,
 )
 
 
@@ -23,6 +25,7 @@ class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         user = serializer.save()
 
         return Response(
@@ -89,30 +92,31 @@ class ProjectCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-# Project List API
+# Ticket 5: Project List API
 class ProjectListView(generics.ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
 
 
-# Project Detail API
+# Ticket 6: Project Detail API
 class ProjectDetailView(generics.RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
 
 
-# Project Update API
+# Ticket 7: Project Update API
 class ProjectUpdateView(generics.UpdateAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
 
 
-# Project Delete API
+# Ticket 8: Project Delete API
 class ProjectDeleteView(generics.DestroyAPIView):
     queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
 
     def destroy(self, request, *args, **kwargs):
@@ -128,23 +132,16 @@ class ProjectDeleteView(generics.DestroyAPIView):
 
 
 # Ticket 9: Create Task API
-
 class TaskCreateView(generics.CreateAPIView):
-
     queryset = Task.objects.all()
-
     serializer_class = TaskSerializer
-
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-
-        serializer.save()    
+        serializer.save()
 
 
 # Ticket 10: List Tasks API
-# Returns all tasks for authenticated users.
-
 class TaskListView(generics.ListAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -152,18 +149,13 @@ class TaskListView(generics.ListAPIView):
 
 
 # Ticket 11: Task Detail API
-# Returns details of a specific task.
-
 class TaskDetailView(generics.RetrieveAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
 
-
 # Ticket 12: Update Task API
-# Allows authenticated users to update an existing task.
-
 class TaskUpdateView(generics.UpdateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -171,10 +163,9 @@ class TaskUpdateView(generics.UpdateAPIView):
 
 
 # Ticket 13: Delete Task API
-# Allows authenticated users to delete an existing task.
-
 class TaskDeleteView(generics.DestroyAPIView):
     queryset = Task.objects.all()
+    serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
     def destroy(self, request, *args, **kwargs):
@@ -186,8 +177,10 @@ class TaskDeleteView(generics.DestroyAPIView):
                 "message": "Task deleted successfully."
             },
             status=status.HTTP_200_OK
-        )    
+        )
 
+
+# Ticket 14: Task Assignment API
 class TaskAssignView(generics.GenericAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskAssignSerializer
@@ -200,7 +193,9 @@ class TaskAssignView(generics.GenericAPIView):
             data=request.data,
             context={"task": task}
         )
+
         serializer.is_valid(raise_exception=True)
+
         task = serializer.save()
 
         return Response(
@@ -216,4 +211,31 @@ class TaskAssignView(generics.GenericAPIView):
                 },
             },
             status=status.HTTP_200_OK
+        )
+
+
+# Ticket 15: Upload Document API
+class DocumentUploadAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        serializer = DocumentSerializer(
+            data=request.data,
+            context={"request": request}
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        document = serializer.save()
+
+        return Response(
+            {
+                "message": "Document uploaded successfully.",
+                "document": DocumentSerializer(
+                    document,
+                    context={"request": request}
+                ).data
+            },
+            status=status.HTTP_201_CREATED
         )
