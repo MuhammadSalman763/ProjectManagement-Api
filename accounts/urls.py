@@ -21,6 +21,7 @@ from .views import (
     DocumentUpdateView,
     DocumentDeleteView,
     CommentCreateView,
+    CommentListView,
 )
 
 
@@ -162,5 +163,11 @@ urlpatterns = [
         "comments/",
         CommentCreateView.as_view(),
         name="comment-create",
+    ),
+    # Ticket 21: List Comments
+    path(
+        "comments/list/",
+        CommentListView.as_view(),
+        name="comment-list",
     ),
 ]

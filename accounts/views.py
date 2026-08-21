@@ -1,10 +1,17 @@
+from django.db.models import Q
+
 from rest_framework import generics, status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Project, Task, Document,Comment
+from .models import (
+    Project,
+    Task,
+    Document,
+    Comment,
+)
 
 from .serializers import (
     RegisterSerializer,
@@ -27,7 +34,6 @@ class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         user = serializer.save()
 
         return Response(
@@ -197,7 +203,6 @@ class TaskAssignView(generics.GenericAPIView):
         )
 
         serializer.is_valid(raise_exception=True)
-
         task = serializer.save()
 
         return Response(
@@ -230,7 +235,6 @@ class DocumentUploadAPIView(APIView):
         )
 
         serializer.is_valid(raise_exception=True)
-
         document = serializer.save()
 
         return Response(
@@ -257,7 +261,7 @@ class DocumentListView(generics.ListAPIView):
             return Document.objects.filter(
                 project_id=project_id,
                 project__team_members=self.request.user,
-            )
+            ).distinct()
 
         return Document.objects.filter(
             project__team_members=self.request.user
@@ -272,7 +276,8 @@ class DocumentDetailView(generics.RetrieveAPIView):
     def get_queryset(self):
         return Document.objects.filter(
             project__team_members=self.request.user
-        ).distinct()   
+        ).distinct()
+
 
 # Ticket 18: Update Document API
 class DocumentUpdateView(generics.UpdateAPIView):
@@ -287,7 +292,6 @@ class DocumentUpdateView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         partial = request.method == "PATCH"
-
         instance = self.get_object()
 
         serializer = self.get_serializer(
@@ -297,7 +301,6 @@ class DocumentUpdateView(generics.UpdateAPIView):
         )
 
         serializer.is_valid(raise_exception=True)
-
         document = serializer.save()
 
         return Response(
@@ -309,10 +312,10 @@ class DocumentUpdateView(generics.UpdateAPIView):
                 ).data,
             },
             status=status.HTTP_200_OK,
-        )    
+        )
 
 
-  # Ticket 19: Delete Document API
+# Ticket 19: Delete Document API
 class DocumentDeleteView(generics.DestroyAPIView):
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
@@ -330,17 +333,40 @@ class DocumentDeleteView(generics.DestroyAPIView):
             {
                 "message": "Document deleted successfully."
             },
-            status=status.HTTP_200_OK
-        )  
+            status=status.HTTP_200_OK,
+        )
+
 
 # Ticket 20: Create Comment API
 class CommentCreateView(generics.CreateAPIView):
-
     queryset = Comment.objects.all()
-
     serializer_class = CommentSerializer
-
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)    
+        serializer.save(author=self.request.user)
+
+
+# Ticket 21: List Comments API
+class CommentListView(generics.ListAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        queryset = Comment.objects.filter(
+            Q(task__project__team_members=user)
+            | Q(project__team_members=user)
+        ).distinct()
+
+        task_id = self.request.query_params.get("task")
+        project_id = self.request.query_params.get("project")
+
+        if task_id:
+            queryset = queryset.filter(task_id=task_id)
+
+        if project_id:
+            queryset = queryset.filter(project_id=project_id)
+
+        return queryset
