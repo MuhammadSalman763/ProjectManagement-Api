@@ -407,3 +407,17 @@ class CommentDeleteView(generics.DestroyAPIView):
             },
             status=status.HTTP_200_OK,
         )    
+
+
+# Ticket 24: Comment Detail API
+class CommentDetailView(generics.RetrieveAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return Comment.objects.filter(
+            Q(task__project__team_members=user)
+            | Q(project__team_members=user)
+        ).distinct()    
