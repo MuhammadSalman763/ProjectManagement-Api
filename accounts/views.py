@@ -14,6 +14,7 @@ from .models import (
     TimelineEvent,
     Notification,
 )
+
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
@@ -359,8 +360,8 @@ class CommentListView(generics.ListAPIView):
         user = self.request.user
 
         queryset = Comment.objects.filter(
-            Q(task__project__team_members=user) |
-            Q(project__team_members=user)
+            Q(task__project__team_members=user)
+            | Q(project__team_members=user)
         ).distinct()
 
         task_id = self.request.query_params.get("task")
@@ -374,6 +375,7 @@ class CommentListView(generics.ListAPIView):
 
         return queryset
 
+
 # Ticket 22: Update Comment API
 class CommentUpdateView(generics.UpdateAPIView):
     serializer_class = CommentSerializer
@@ -385,7 +387,8 @@ class CommentUpdateView(generics.UpdateAPIView):
         return Comment.objects.filter(
             Q(task__project__team_members=user)
             | Q(project__team_members=user)
-        ).distinct()    
+        ).distinct()
+
 
 # Ticket 23: Delete Comment API
 class CommentDeleteView(generics.DestroyAPIView):
@@ -409,7 +412,7 @@ class CommentDeleteView(generics.DestroyAPIView):
                 "message": "Comment deleted successfully."
             },
             status=status.HTTP_200_OK,
-        )    
+        )
 
 
 # Ticket 24: Comment Detail API
@@ -423,7 +426,8 @@ class CommentDetailView(generics.RetrieveAPIView):
         return Comment.objects.filter(
             Q(task__project__team_members=user)
             | Q(project__team_members=user)
-        ).distinct()  
+        ).distinct()
+
 
 # Ticket 25: Project Comments API
 class ProjectCommentsView(generics.ListAPIView):
@@ -437,60 +441,10 @@ class ProjectCommentsView(generics.ListAPIView):
         return Comment.objects.filter(
             project_id=project_id,
             project__team_members=user,
-        ).distinct()      
-
-
- # Ticket 26: Comment Detail API
-class CommentDetailView(generics.RetrieveAPIView):
-    serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-
-        return Comment.objects.filter(
-            Q(task__project__team_members=user)
-            | Q(project__team_members=user)
-        ).distinct() 
-
-
-# Ticket 27: Update Comment API
-class CommentUpdateView(generics.UpdateAPIView):
-    serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-
-        return Comment.objects.filter(
-            Q(task__project__team_members=user)
-            | Q(project__team_members=user)
         ).distinct()
 
-    def update(self, request, *args, **kwargs):
-        partial = request.method == "PATCH"
-        instance = self.get_object()
 
-        serializer = self.get_serializer(
-            instance,
-            data=request.data,
-            partial=partial,
-        )
-
-        serializer.is_valid(raise_exception=True)
-        comment = serializer.save()
-
-        return Response(
-            {
-                "message": "Comment updated successfully.",
-                "comment": CommentSerializer(comment).data,
-            },
-            status=status.HTTP_200_OK,
-        )              
-
-
-
-# Ticket 25: List Timeline Events API
+# Ticket 26: Timeline Events API
 class TimelineEventListView(generics.ListAPIView):
     serializer_class = TimelineEventSerializer
     permission_classes = [IsAuthenticated]
@@ -502,13 +456,13 @@ class TimelineEventListView(generics.ListAPIView):
             project__team_members=user
         ).select_related(
             "project",
-            "user"
+            "user",
         ).order_by(
             "-created_at"
         )
 
 
-# Ticket 26: Notifications API
+# Ticket 27: Notifications API
 class NotificationListView(generics.ListAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
@@ -521,7 +475,7 @@ class NotificationListView(generics.ListAPIView):
         )
 
 
-# Ticket 27: Mark Notification as Read API
+# Ticket 28: Mark Notification as Read API
 class NotificationMarkReadView(generics.UpdateAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
@@ -544,6 +498,5 @@ class NotificationMarkReadView(generics.UpdateAPIView):
                     notification
                 ).data,
             },
-            status=status.HTTP_200_OK
-        )    
-        
+            status=status.HTTP_200_OK,
+        )
