@@ -30,6 +30,7 @@ from .serializers import (
 
 
 # Ticket 1: User Registration API
+
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
@@ -38,6 +39,7 @@ class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         user = serializer.save()
 
         return Response(
@@ -53,6 +55,7 @@ class RegisterView(generics.CreateAPIView):
 
 
 # Ticket 2: User Login API
+
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
@@ -80,6 +83,7 @@ class LoginView(generics.GenericAPIView):
 
 
 # Ticket 3: User Logout API
+
 class LogoutView(generics.GenericAPIView):
     serializer_class = LogoutSerializer
     permission_classes = [IsAuthenticated]
@@ -98,13 +102,29 @@ class LogoutView(generics.GenericAPIView):
 
 
 # Ticket 4: Project Creation API
+
 class ProjectCreateView(generics.CreateAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
 
+    def perform_create(self, serializer):
+        project = serializer.save()
+
+        # Add creator to project team
+        project.team_members.add(self.request.user)
+
+        # Create timeline event
+        TimelineEvent.objects.create(
+            project=project,
+            user=self.request.user,
+            event_type="project_created",
+            description=f"Project '{project.title}' was created.",
+        )
+
 
 # Ticket 5: Project List API
+
 class ProjectListView(generics.ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
@@ -112,6 +132,7 @@ class ProjectListView(generics.ListAPIView):
 
 
 # Ticket 6: Project Detail API
+
 class ProjectDetailView(generics.RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
@@ -119,6 +140,7 @@ class ProjectDetailView(generics.RetrieveAPIView):
 
 
 # Ticket 7: Project Update API
+
 class ProjectUpdateView(generics.UpdateAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
@@ -126,6 +148,7 @@ class ProjectUpdateView(generics.UpdateAPIView):
 
 
 # Ticket 8: Project Delete API
+
 class ProjectDeleteView(generics.DestroyAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
@@ -144,6 +167,7 @@ class ProjectDeleteView(generics.DestroyAPIView):
 
 
 # Ticket 9: Create Task API
+
 class TaskCreateView(generics.CreateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -154,6 +178,7 @@ class TaskCreateView(generics.CreateAPIView):
 
 
 # Ticket 10: List Tasks API
+
 class TaskListView(generics.ListAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -161,6 +186,7 @@ class TaskListView(generics.ListAPIView):
 
 
 # Ticket 11: Task Detail API
+
 class TaskDetailView(generics.RetrieveAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -168,6 +194,7 @@ class TaskDetailView(generics.RetrieveAPIView):
 
 
 # Ticket 12: Update Task API
+
 class TaskUpdateView(generics.UpdateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -175,6 +202,7 @@ class TaskUpdateView(generics.UpdateAPIView):
 
 
 # Ticket 13: Delete Task API
+
 class TaskDeleteView(generics.DestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -192,7 +220,8 @@ class TaskDeleteView(generics.DestroyAPIView):
         )
 
 
-# Ticket 14: Task Assignment API
+# Ticket 14: Assign Task API
+
 class TaskAssignView(generics.GenericAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskAssignSerializer
@@ -203,11 +232,41 @@ class TaskAssignView(generics.GenericAPIView):
 
         serializer = self.get_serializer(
             data=request.data,
-            context={"task": task},
+            context={
+                "task": task,
+                "request": request,
+            },
         )
 
         serializer.is_valid(raise_exception=True)
+
         task = serializer.save()
+
+        # Safety check
+        if task.assignee is None:
+            return Response(
+                {
+                    "error": "Task could not be assigned."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Create notification
+        Notification.objects.create(
+            user=task.assignee,
+            message=f"You have been assigned task '{task.title}'.",
+        )
+
+        # Create timeline event
+        TimelineEvent.objects.create(
+            project=task.project,
+            user=request.user,
+            event_type="task_assigned",
+            description=(
+                f"Task '{task.title}' was assigned "
+                f"to {task.assignee.username}."
+            ),
+        )
 
         return Response(
             {
@@ -218,16 +277,14 @@ class TaskAssignView(generics.GenericAPIView):
                     "assignee": {
                         "id": task.assignee.id,
                         "username": task.assignee.username,
-                    }
-                    if task.assignee
-                    else None,
+                    },
                 },
             },
             status=status.HTTP_200_OK,
         )
 
-
 # Ticket 15: Upload Document API
+
 class DocumentUploadAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -254,6 +311,7 @@ class DocumentUploadAPIView(APIView):
 
 
 # Ticket 16: List Documents API
+
 class DocumentListView(generics.ListAPIView):
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
@@ -273,6 +331,7 @@ class DocumentListView(generics.ListAPIView):
 
 
 # Ticket 17: Document Detail API
+
 class DocumentDetailView(generics.RetrieveAPIView):
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
@@ -284,6 +343,7 @@ class DocumentDetailView(generics.RetrieveAPIView):
 
 
 # Ticket 18: Update Document API
+
 class DocumentUpdateView(generics.UpdateAPIView):
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
@@ -296,6 +356,7 @@ class DocumentUpdateView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         partial = request.method == "PATCH"
+
         instance = self.get_object()
 
         serializer = self.get_serializer(
@@ -320,6 +381,7 @@ class DocumentUpdateView(generics.UpdateAPIView):
 
 
 # Ticket 19: Delete Document API
+
 class DocumentDeleteView(generics.DestroyAPIView):
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
@@ -342,6 +404,7 @@ class DocumentDeleteView(generics.DestroyAPIView):
 
 
 # Ticket 20: Create Comment API
+
 class CommentCreateView(generics.CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
@@ -352,6 +415,7 @@ class CommentCreateView(generics.CreateAPIView):
 
 
 # Ticket 21: List Comments API
+
 class CommentListView(generics.ListAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
@@ -377,6 +441,7 @@ class CommentListView(generics.ListAPIView):
 
 
 # Ticket 22: Update Comment API
+
 class CommentUpdateView(generics.UpdateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
@@ -391,6 +456,7 @@ class CommentUpdateView(generics.UpdateAPIView):
 
 
 # Ticket 23: Delete Comment API
+
 class CommentDeleteView(generics.DestroyAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
@@ -416,6 +482,7 @@ class CommentDeleteView(generics.DestroyAPIView):
 
 
 # Ticket 24: Comment Detail API
+
 class CommentDetailView(generics.RetrieveAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
@@ -430,6 +497,7 @@ class CommentDetailView(generics.RetrieveAPIView):
 
 
 # Ticket 25: Project Comments API
+
 class ProjectCommentsView(generics.ListAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
@@ -445,6 +513,7 @@ class ProjectCommentsView(generics.ListAPIView):
 
 
 # Ticket 26: Timeline Events API
+
 class TimelineEventListView(generics.ListAPIView):
     serializer_class = TimelineEventSerializer
     permission_classes = [IsAuthenticated]
@@ -452,17 +521,16 @@ class TimelineEventListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
 
-        return TimelineEvent.objects.filter(
-            project__team_members=user
-        ).select_related(
-            "project",
-            "user",
-        ).order_by(
-            "-created_at"
+        return (
+            TimelineEvent.objects
+            .filter(project__team_members=user)
+            .select_related("project", "user")
+            .order_by("-created_at")
         )
 
 
 # Ticket 27: Notifications API
+
 class NotificationListView(generics.ListAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
@@ -470,12 +538,11 @@ class NotificationListView(generics.ListAPIView):
     def get_queryset(self):
         return Notification.objects.filter(
             user=self.request.user
-        ).order_by(
-            "-created_at"
-        )
+        ).order_by("-created_at")
 
 
 # Ticket 28: Mark Notification as Read API
+
 class NotificationMarkReadView(generics.UpdateAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
@@ -495,7 +562,8 @@ class NotificationMarkReadView(generics.UpdateAPIView):
             {
                 "message": "Notification marked as read.",
                 "notification": NotificationSerializer(
-                    notification
+                    notification,
+                    context={"request": request},
                 ).data,
             },
             status=status.HTTP_200_OK,
