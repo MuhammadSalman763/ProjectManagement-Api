@@ -17,16 +17,12 @@ from .models import (
 
 
 # Ticket 1: User Registration Serializer
+
 class RegisterSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(
         write_only=True,
         min_length=8,
-    )
-
-    role = serializers.ChoiceField(
-        choices=Profile.ROLE_CHOICES,
-        default="developer",
     )
 
     contact_number = serializers.IntegerField(
@@ -47,7 +43,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             "username",
             "email",
             "password",
-            "role",
             "contact_number",
             "profile_picture",
         ]
@@ -85,11 +80,6 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
 
-        role = validated_data.pop(
-            "role",
-            "developer",
-        )
-
         contact_number = validated_data.pop(
             "contact_number",
             None,
@@ -109,9 +99,11 @@ class RegisterSerializer(serializers.ModelSerializer):
             **validated_data,
         )
 
+        # Public registration always creates
+        # a developer account.
         Profile.objects.create(
             user=user,
-            role=role,
+            role="developer",
             contact_number=contact_number,
             profile_picture=profile_picture,
         )
@@ -122,22 +114,21 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         profile = instance.profile
 
-        request = self.context.get("request")
+        request = self.context.get(
+            "request"
+        )
 
         if profile.profile_picture:
 
             profile_picture_added = True
 
             if request:
-
                 profile_picture_url = (
                     request.build_absolute_uri(
                         profile.profile_picture.url
                     )
                 )
-
             else:
-
                 profile_picture_url = (
                     profile.profile_picture.url
                 )
@@ -159,6 +150,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 # Ticket 2: User Login Serializer
+
 class LoginSerializer(serializers.Serializer):
 
     username = serializers.CharField()
@@ -178,13 +170,11 @@ class LoginSerializer(serializers.Serializer):
         )
 
         if user is None:
-
             raise serializers.ValidationError(
                 "Invalid username or password."
             )
 
         if not user.is_active:
-
             raise serializers.ValidationError(
                 "User account is disabled."
             )
@@ -201,6 +191,7 @@ class LoginSerializer(serializers.Serializer):
 
 
 # Ticket 3: User Logout Serializer
+
 class LogoutSerializer(serializers.Serializer):
 
     refresh = serializers.CharField(
@@ -210,11 +201,9 @@ class LogoutSerializer(serializers.Serializer):
     def validate_refresh(self, value):
 
         try:
-
             RefreshToken(value)
 
         except Exception:
-
             raise serializers.ValidationError(
                 "Invalid or expired refresh token."
             )
@@ -236,7 +225,6 @@ class LogoutSerializer(serializers.Serializer):
             token.blacklist()
 
         except Exception:
-
             raise serializers.ValidationError(
                 "Invalid or expired refresh token."
             )
@@ -246,11 +234,11 @@ class LogoutSerializer(serializers.Serializer):
         }
 
 
-# Ticket 4: Project Serializer
+# Ticket 4-8: Project Serializer
+
 class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
-
         model = Project
 
         fields = [
@@ -308,10 +296,10 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 # Ticket 9-14: Task Serializer
+
 class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
-
         model = Task
 
         fields = [
@@ -340,13 +328,11 @@ class TaskSerializer(serializers.ModelSerializer):
         if self.instance:
 
             if project is None:
-
                 project = (
                     self.instance.project
                 )
 
             if assignee is None:
-
                 assignee = (
                     self.instance.assignee
                 )
@@ -370,6 +356,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 # Ticket 14: Task Assignment Serializer
+
 class TaskAssignSerializer(serializers.Serializer):
 
     assignee = serializers.PrimaryKeyRelatedField(
@@ -408,10 +395,10 @@ class TaskAssignSerializer(serializers.Serializer):
 
 
 # Ticket 15-19: Document Serializer
+
 class DocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
-
         model = Document
 
         fields = [
@@ -451,10 +438,10 @@ class DocumentSerializer(serializers.ModelSerializer):
 
 
 # Ticket 20-25: Comment Serializer
+
 class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
-
         model = Comment
 
         fields = [
@@ -485,11 +472,9 @@ class CommentSerializer(serializers.ModelSerializer):
         if self.instance:
 
             if task is None:
-
                 task = self.instance.task
 
             if project is None:
-
                 project = self.instance.project
 
         if (
@@ -510,35 +495,35 @@ class CommentSerializer(serializers.ModelSerializer):
                 "Comment cannot belong to both a task and a project."
             )
 
+        # Make sure the selected task/project
+        # belongs to a project where the user is a member.
+        request = self.context.get("request")
+
+        if request and request.user.is_authenticated:
+
+            project_to_check = project
+
+            if task is not None:
+                project_to_check = task.project
+
+            if project_to_check is not None:
+
+                if not project_to_check.team_members.filter(
+                    id=request.user.id
+                ).exists():
+
+                    raise serializers.ValidationError(
+                        "You must be a member of the project team."
+                    )
+
         return attrs
 
 
-# Ticket 27-28: Notification Serializer
-class NotificationSerializer(serializers.ModelSerializer):
-
-    class Meta:
-
-        model = Notification
-
-        fields = [
-            "id",
-            "message",
-            "is_read",
-            "created_at",
-        ]
-
-        read_only_fields = [
-            "id",
-            "message",
-            "created_at",
-        ]
-
-
 # Ticket 26: Timeline Event Serializer
+
 class TimelineEventSerializer(serializers.ModelSerializer):
 
     class Meta:
-
         model = TimelineEvent
 
         fields = [
@@ -552,5 +537,26 @@ class TimelineEventSerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             "id",
+            "created_at",
+        ]
+
+
+# Ticket 27-28: Notification Serializer
+
+class NotificationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Notification
+
+        fields = [
+            "id",
+            "message",
+            "is_read",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "message",
             "created_at",
         ]
