@@ -29,11 +29,24 @@ from .serializers import (
     NotificationSerializer,
 )
 
+from .permissions import (
+    IsManager,
+    IsManagerOrDeveloper,
+    IsManagerOrQA,
+    IsProjectTeamMember,
+    IsCommentAuthor,
+    IsNotificationOwner,
+)
 
+
+# ============================================================
 # Ticket 1: User Registration API
+# ============================================================
+
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+
     parser_classes = [
         MultiPartParser,
         FormParser,
@@ -43,6 +56,7 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(
             data=request.data
         )
+
         serializer.is_valid(
             raise_exception=True
         )
@@ -63,7 +77,10 @@ class RegisterView(generics.CreateAPIView):
         )
 
 
+# ============================================================
 # Ticket 2: User Login API
+# ============================================================
+
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
@@ -72,6 +89,7 @@ class LoginView(generics.GenericAPIView):
         serializer = self.get_serializer(
             data=request.data
         )
+
         serializer.is_valid(
             raise_exception=True
         )
@@ -94,7 +112,10 @@ class LoginView(generics.GenericAPIView):
         )
 
 
+# ============================================================
 # Ticket 3: User Logout API
+# ============================================================
+
 class LogoutView(generics.GenericAPIView):
     serializer_class = LogoutSerializer
     permission_classes = [IsAuthenticated]
@@ -103,6 +124,7 @@ class LogoutView(generics.GenericAPIView):
         serializer = self.get_serializer(
             data=request.data
         )
+
         serializer.is_valid(
             raise_exception=True
         )
@@ -117,11 +139,19 @@ class LogoutView(generics.GenericAPIView):
         )
 
 
-# Ticket 4: Project Creation API
+# ============================================================
+# Ticket 4: Create Project
+# Manager only
+# ============================================================
+
 class ProjectCreateView(generics.CreateAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+        IsManager,
+    ]
 
     def perform_create(self, serializer):
         project = serializer.save()
@@ -141,10 +171,16 @@ class ProjectCreateView(generics.CreateAPIView):
         )
 
 
-# Ticket 5: Project List API
+# ============================================================
+# Ticket 5: Project List
+# ============================================================
+
 class ProjectListView(generics.ListAPIView):
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         return Project.objects.filter(
@@ -152,10 +188,16 @@ class ProjectListView(generics.ListAPIView):
         ).distinct()
 
 
-# Ticket 6: Project Detail API
+# ============================================================
+# Ticket 6: Project Detail
+# ============================================================
+
 class ProjectDetailView(generics.RetrieveAPIView):
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         return Project.objects.filter(
@@ -163,10 +205,18 @@ class ProjectDetailView(generics.RetrieveAPIView):
         ).distinct()
 
 
-# Ticket 7: Project Update API
+# ============================================================
+# Ticket 7: Project Update
+# Manager only
+# ============================================================
+
 class ProjectUpdateView(generics.UpdateAPIView):
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+        IsManager,
+    ]
 
     def get_queryset(self):
         return Project.objects.filter(
@@ -174,10 +224,18 @@ class ProjectUpdateView(generics.UpdateAPIView):
         ).distinct()
 
 
-# Ticket 8: Project Delete API
+# ============================================================
+# Ticket 8: Project Delete
+# Manager only
+# ============================================================
+
 class ProjectDeleteView(generics.DestroyAPIView):
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+        IsManager,
+    ]
 
     def get_queryset(self):
         return Project.objects.filter(
@@ -197,10 +255,18 @@ class ProjectDeleteView(generics.DestroyAPIView):
         )
 
 
-# Ticket 9: Create Task API
+# ============================================================
+# Ticket 9: Create Task
+# Manager + Developer
+# ============================================================
+
 class TaskCreateView(generics.CreateAPIView):
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+        IsManagerOrDeveloper,
+    ]
 
     def perform_create(self, serializer):
         project = serializer.validated_data.get(
@@ -222,10 +288,16 @@ class TaskCreateView(generics.CreateAPIView):
         serializer.save()
 
 
-# Ticket 10: List Tasks API
+# ============================================================
+# Ticket 10: List Tasks
+# ============================================================
+
 class TaskListView(generics.ListAPIView):
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         return Task.objects.filter(
@@ -233,10 +305,16 @@ class TaskListView(generics.ListAPIView):
         ).distinct()
 
 
-# Ticket 11: Task Detail API
+# ============================================================
+# Ticket 11: Task Detail
+# ============================================================
+
 class TaskDetailView(generics.RetrieveAPIView):
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         return Task.objects.filter(
@@ -244,15 +322,37 @@ class TaskDetailView(generics.RetrieveAPIView):
         ).distinct()
 
 
-# Ticket 12: Update Task API
+# ============================================================
+# Ticket 12: Update Task
+# Manager + QA + Developer
+# ============================================================
+
 class TaskUpdateView(generics.UpdateAPIView):
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         return Task.objects.filter(
             project__team_members=self.request.user
         ).distinct()
+
+    def check_permissions(self, request):
+        super().check_permissions(request)
+
+        role = request.user.profile.role
+
+        if role not in [
+            "manager",
+            "qa",
+            "developer",
+        ]:
+            self.permission_denied(
+                request,
+                message="You are not allowed to update tasks.",
+            )
 
 
 # Ticket 13: Delete Task API
@@ -268,6 +368,14 @@ class TaskDeleteView(generics.DestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         task = self.get_object()
 
+        # User must be a member of the project team
+        if not task.project.team_members.filter(
+            id=request.user.id
+        ).exists():
+            raise PermissionDenied(
+                "You must be a member of the project team."
+            )
+
         task.delete()
 
         return Response(
@@ -277,16 +385,31 @@ class TaskDeleteView(generics.DestroyAPIView):
             status=status.HTTP_200_OK,
         )
 
+# ============================================================
+# Ticket 14: Assign Task
+# Manager only
+# ============================================================
 
-# Ticket 14: Assign Task API
 class TaskAssignView(generics.GenericAPIView):
     serializer_class = TaskAssignSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+        IsManager,
+    ]
 
     def get_queryset(self):
         return Task.objects.filter(
             project__team_members=self.request.user
         ).distinct()
+
+    def get_object(self):
+        task = generics.get_object_or_404(
+            self.get_queryset(),
+            pk=self.kwargs["pk"],
+        )
+
+        return task
 
     def post(self, request, *args, **kwargs):
         task = self.get_object()
@@ -347,9 +470,14 @@ class TaskAssignView(generics.GenericAPIView):
         )
 
 
-# Ticket 15: Upload Document API
+# ============================================================
+# Ticket 15: Upload Document
+# ============================================================
+
 class DocumentUploadAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     parser_classes = [
         MultiPartParser,
@@ -384,10 +512,16 @@ class DocumentUploadAPIView(APIView):
         )
 
 
-# Ticket 16: List Documents API
+# ============================================================
+# Ticket 16: List Documents
+# ============================================================
+
 class DocumentListView(generics.ListAPIView):
     serializer_class = DocumentSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         project_id = self.request.query_params.get(
@@ -405,10 +539,16 @@ class DocumentListView(generics.ListAPIView):
         ).distinct()
 
 
-# Ticket 17: Document Detail API
+# ============================================================
+# Ticket 17: Document Detail
+# ============================================================
+
 class DocumentDetailView(generics.RetrieveAPIView):
     serializer_class = DocumentSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         return Document.objects.filter(
@@ -416,10 +556,16 @@ class DocumentDetailView(generics.RetrieveAPIView):
         ).distinct()
 
 
-# Ticket 18: Update Document API
+# ============================================================
+# Ticket 18: Update Document
+# ============================================================
+
 class DocumentUpdateView(generics.UpdateAPIView):
     serializer_class = DocumentSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     parser_classes = [
         MultiPartParser,
@@ -475,6 +621,14 @@ class DocumentDeleteView(generics.DestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         document = self.get_object()
 
+        # User must be a member of the project team
+        if not document.project.team_members.filter(
+            id=request.user.id
+        ).exists():
+            raise PermissionDenied(
+                "You must be a member of the project team."
+            )
+
         document.delete()
 
         return Response(
@@ -485,11 +639,17 @@ class DocumentDeleteView(generics.DestroyAPIView):
         )
 
 
-# Ticket 20: Create Comment API
+# ============================================================
+# Ticket 20: Create Comment
+# ============================================================
+
 class CommentCreateView(generics.CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def perform_create(self, serializer):
         serializer.save(
@@ -497,10 +657,16 @@ class CommentCreateView(generics.CreateAPIView):
         )
 
 
-# Ticket 21: List Comments API
+# ============================================================
+# Ticket 21: List Comments
+# ============================================================
+
 class CommentListView(generics.ListAPIView):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         user = self.request.user
@@ -536,10 +702,18 @@ class CommentListView(generics.ListAPIView):
         return queryset
 
 
-# Ticket 22: Update Comment API
+# ============================================================
+# Ticket 22: Update Comment
+# Own comment only
+# ============================================================
+
 class CommentUpdateView(generics.UpdateAPIView):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+        IsCommentAuthor,
+    ]
 
     def get_queryset(self):
         return Comment.objects.filter(
@@ -547,10 +721,18 @@ class CommentUpdateView(generics.UpdateAPIView):
         )
 
 
-# Ticket 23: Delete Comment API
+# ============================================================
+# Ticket 23: Delete Comment
+# Own comment only
+# ============================================================
+
 class CommentDeleteView(generics.DestroyAPIView):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+        IsCommentAuthor,
+    ]
 
     def get_queryset(self):
         return Comment.objects.filter(
@@ -570,10 +752,16 @@ class CommentDeleteView(generics.DestroyAPIView):
         )
 
 
-# Ticket 24: Comment Detail API
+# ============================================================
+# Ticket 24: Comment Detail
+# ============================================================
+
 class CommentDetailView(generics.RetrieveAPIView):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         user = self.request.user
@@ -589,13 +777,20 @@ class CommentDetailView(generics.RetrieveAPIView):
         ).distinct()
 
 
-# Ticket 25: Project Comments API
+# ============================================================
+# Ticket 25: Project Comments
+# ============================================================
+
 class ProjectCommentsView(generics.ListAPIView):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         project_id = self.kwargs["project_id"]
+
         user = self.request.user
 
         return Comment.objects.filter(
@@ -604,10 +799,16 @@ class ProjectCommentsView(generics.ListAPIView):
         ).distinct()
 
 
-# Ticket 26: Timeline Events API
+# ============================================================
+# Ticket 26: Timeline Events
+# ============================================================
+
 class TimelineEventListView(generics.ListAPIView):
     serializer_class = TimelineEventSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         user = self.request.user
@@ -625,10 +826,16 @@ class TimelineEventListView(generics.ListAPIView):
         )
 
 
-# Ticket 27: Notifications API
+# ============================================================
+# Ticket 27: Notifications
+# ============================================================
+
 class NotificationListView(generics.ListAPIView):
     serializer_class = NotificationSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         return Notification.objects.filter(
@@ -636,12 +843,17 @@ class NotificationListView(generics.ListAPIView):
         ).order_by("-created_at")
 
 
-# Ticket 28: Mark Notification as Read API
-class NotificationMarkReadView(
-    generics.UpdateAPIView
-):
+# ============================================================
+# Ticket 28: Mark Notification as Read
+# ============================================================
+
+class NotificationMarkReadView(generics.UpdateAPIView):
     serializer_class = NotificationSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+        IsNotificationOwner,
+    ]
 
     def get_queryset(self):
         return Notification.objects.filter(
