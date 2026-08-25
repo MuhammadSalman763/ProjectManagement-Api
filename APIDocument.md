@@ -1,468 +1,168 @@
-# Project Management API
+# Project Management API Documentation
 
-A RESTful backend API for a collaborative Project Management application built with **Django**, **Django REST Framework (DRF)**, **JWT Authentication**, and **drf-spectacular**.
+RESTful API documentation for the Collaborative Project Management API.
 
-The API provides user authentication, project management, task management, document management, comments, timeline events, and notifications.
+The API is built using **Django REST Framework**, **JWT Authentication**, **DRF Spectacular**, and **role-based authorization**.
+
+> Installation, virtual environment setup, `.env` configuration, migrations, and server setup are documented in `README.md`.
 
 ---
 
-## Table of Contents
+# Table of Contents
 
-* [Project Overview](#project-overview)
-* [Features](#features)
-* [Technology Stack](#technology-stack)
-* [Project Structure](#project-structure)
-* [Requirements](#requirements)
-* [Installation and Setup](#installation-and-setup)
-* [Environment Variables](#environment-variables)
-* [Database Setup](#database-setup)
-* [Create Superuser](#create-superuser)
-* [Run Development Server](#run-development-server)
-* [API Documentation](#api-documentation)
+* [Base URL](#base-url)
 * [Authentication](#authentication)
+* [Roles and Authorization](#roles-and-authorization)
 * [User Authentication APIs](#1-user-authentication-apis)
 * [Project APIs](#2-project-apis)
 * [Task APIs](#3-task-apis)
 * [Document APIs](#4-document-apis)
 * [Comment APIs](#5-comment-apis)
-* [Timeline APIs](#6-timeline-event-apis)
+* [Timeline APIs](#6-timeline-apis)
 * [Notification APIs](#7-notification-apis)
 * [HTTP Status Codes](#http-status-codes)
+* [Authorization Rules](#authorization-rules)
 * [Testing](#testing)
-* [Git Workflow](#git-workflow)
-* [Troubleshooting](#troubleshooting)
-* [Future Improvements](#future-improvements)
-
----
-
-# Project Overview
-
-The Project Management API is designed for collaborative teams where users can:
-
-* Register an account
-* Login using JWT authentication
-* Logout and blacklist refresh tokens
-* Create projects
-* View projects
-* Update projects
-* Delete projects
-* Create tasks
-* View tasks
-* View task details
-* Update tasks
-* Delete tasks
-* Assign tasks
-* Upload documents
-* View documents
-* View document details
-* Create comments
-* View comments
-* Update comments
-* Delete comments
-* View project comments
-* View timeline events
-* View notifications
-* Mark notifications as read
-
----
-
-# Features
-
-## Authentication
-
-* User registration
-* JWT login
-* Access token
-* Refresh token
-* JWT logout
-* Refresh token blacklisting
-
-## User Profile
-
-* Profile picture upload
-* User role
-* Contact number
-* Manager
-* QA
-* Developer
-
-## Project Management
-
-* Create projects
-* List projects
-* Project details
-* Update projects
-* Delete projects
-
-## Task Management
-
-* Create tasks
-* List tasks
-* Task details
-* Update tasks
-* Delete tasks
-* Assign tasks
-
-## Document Management
-
-* Upload documents
-* List documents
-* Document details
-
-## Collaboration
-
-* Create comments
-* List comments
-* Update comments
-* Delete comments
-* Project comments
-
-## Activity and Notifications
-
-* Timeline events
-* User notifications
-* Mark notifications as read
-
----
-
-# Technology Stack
-
-| Technology            | Purpose                       |
-| --------------------- | ----------------------------- |
-| Python                | Programming language          |
-| Django                | Backend framework             |
-| Django REST Framework | REST APIs                     |
-| Simple JWT            | JWT authentication            |
-| DRF Spectacular       | Swagger/OpenAPI documentation |
-| SQLite / Database     | Data storage                  |
-| Pillow                | Image processing              |
-| Git                   | Version control               |
-| GitHub                | Repository hosting            |
-| Postman               | API testing                   |
-
----
-
-# Project Structure
-
-```text
-ProjectManagement-Api/
-│
-├── accounts/
-│   ├── migrations/
-│   ├── admin.py
-│   ├── apps.py
-│   ├── models.py
-│   ├── serializers.py
-│   ├── tests.py
-│   ├── urls.py
-│   └── views.py
-│
-├── project_management/
-│   ├── settings.py
-│   ├── urls.py
-│   ├── asgi.py
-│   └── wsgi.py
-│
-├── media/
-│   └── profile_pictures/
-│
-├── manage.py
-├── requirements.txt
-├── .env
-├── .gitignore
-└── README.md
-```
-
----
-
-# Requirements
-
-Before installing the project, make sure the following software is installed:
-
-* Python 3.x
-* Git
-* pip
-* Virtual Environment
-* Postman (recommended)
-
-Check Python:
-
-```bash
-python --version
-```
-
-Check Git:
-
-```bash
-git --version
-```
-
-Check pip:
-
-```bash
-pip --version
-```
-
----
-
-# Installation and Setup
-
-## Step 1 — Clone the Repository
-
-Clone the GitHub repository:
-
-```bash
-git clone https://github.com/MuhammadSalman763/ProjectManagement-Api.git
-```
-
-Move into the project directory:
-
-```bash
-cd ProjectManagement-Api
-```
-
----
-
-## Step 2 — Create Virtual Environment
-
-Create a virtual environment:
-
-### Windows
-
-```bash
-python -m venv venv
-```
-
-Activate it:
-
-### Windows CMD
-
-```bash
-venv\Scripts\activate
-```
-
-### Windows PowerShell
-
-```powershell
-venv\Scripts\Activate.ps1
-```
-
-### Git Bash
-
-```bash
-source venv/Scripts/activate
-```
-
-After activation, the terminal should show:
-
-```text
-(venv)
-```
-
----
-
-# Step 3 — Install Dependencies
-
-Install all required packages:
-
-```bash
-pip install -r requirements.txt
-```
-
-If `requirements.txt` does not exist, install the main dependencies:
-
-```bash
-pip install django
-pip install djangorestframework
-pip install djangorestframework-simplejwt
-pip install drf-spectacular
-pip install pillow
-python-dotenv
-```
-
-Then generate requirements:
-
-```bash
-pip freeze > requirements.txt
-```
-
----
-
-# Step 4 — Configure Environment Variables
-
-Create a `.env` file in the root directory.
-
-Example:
-
-```env
-SECRET_KEY=your-secret-key
-DEBUG=True
-
-DB_ENGINE=django.db.backends.sqlite3
-DB_NAME=db.sqlite3
-
-JWT_ACCESS_LIFETIME=5
-JWT_REFRESH_LIFETIME=1
-
-TIME_ZONE=Asia/Karachi
-```
-
-### Important
-
-Do not commit `.env` to GitHub.
-
-Add it to `.gitignore`:
-
-```gitignore
-.env
-venv/
-__pycache__/
-*.pyc
-db.sqlite3
-media/
-```
-
----
-
-# Step 5 — Run Migrations
-
-Run:
-
-```bash
-python manage.py makemigrations
-```
-
-Then:
-
-```bash
-python manage.py migrate
-```
-
----
-
-# Step 6 — Create Superuser
-
-Create an admin user:
-
-```bash
-python manage.py createsuperuser
-```
-
-Enter:
-
-```text
-Username:
-Email:
-Password:
-Password confirmation:
-```
-
----
-
-# Step 7 — Run the Server
-
-Start Django:
-
-```bash
-python manage.py runserver
-```
-
-The API will normally be available at:
-
-```text
-http://127.0.0.1:8000/
-```
-
----
-
-# Step 8 — Open Django Admin
-
-Open:
-
-```text
-http://127.0.0.1:8000/admin/
-```
-
-Login using your superuser credentials.
-
----
-
-# API Documentation
-
-The project uses **drf-spectacular** for automatic OpenAPI documentation.
-
-Swagger UI:
-
-```text
-/api/docs/
-```
-
-ReDoc:
-
-```text
-/api/redoc/
-```
-
-OpenAPI schema:
-
-```text
-/api/schema/
-```
-
-Swagger is recommended because it allows developers to test APIs directly from the browser.
+* [Swagger](#swagger-api-documentation)
 
 ---
 
 # Base URL
 
-For local development:
-
 ```text
 http://127.0.0.1:8000
 ```
 
-All API endpoints are based on this URL.
+All API endpoints use this base URL.
 
 Example:
 
-```text
-http://127.0.0.1:8000/api/login/
+```http
+POST /api/login/
 ```
 
 ---
 
 # Authentication
 
-Most APIs require JWT authentication.
+The API uses JWT authentication.
 
-After successful login, the API returns:
+After successful login:
 
 ```json
 {
-    "access": "ACCESS_TOKEN",
-    "refresh": "REFRESH_TOKEN"
+    "refresh": "REFRESH_TOKEN",
+    "access": "ACCESS_TOKEN"
 }
 ```
 
-Use the access token in protected requests.
-
-Header:
+Use the access token for protected endpoints:
 
 ```http
 Authorization: Bearer ACCESS_TOKEN
 ```
 
-Example:
+Authentication and authorization are separate:
 
-```http
-Authorization: Bearer eyJhbGciOiJIUzI1Ni...
+```text
+Authentication
+      ↓
+Is the user logged in?
+      ↓
+Authorization
+      ↓
+Does the user's role allow this action?
 ```
 
 ---
 
-# 1. User Authentication APIs
+# Roles and Authorization
+
+The API supports:
+
+```text
+manager
+qa
+developer
+```
+
+## Manager
+
+Managers have full access to project and task management.
+
+```text
+Project: CRUD
+Task: CRUD + Assign
+Document: CRUD/Access
+Comment: Full management
+Timeline: Read
+Notification: Read + Mark Read
+```
+
+## QA
+
+QA users have restricted management access.
+
+```text
+Project: Read
+Task: Read + Update allowed tasks
+Document: Read + Upload
+Comment: Create + Read + Own Update/Delete
+Timeline: Read
+Notification: Read + Own Mark Read
+```
+
+## Developer
+
+Developers have restricted project and task access.
+
+```text
+Project: Read
+Task: Read + Update assigned/allowed tasks
+Document: Read + Upload
+Comment: Create + Read + Own Update/Delete
+Timeline: Read
+Notification: Read + Own Mark Read
+```
 
 ---
+
+# Permission Matrix
+
+| API Operation          | Manager       | QA            | Developer        |
+| ---------------------- | ------------- | ------------- | ---------------- |
+| Register               | Public        | Public        | Public           |
+| Login                  | Public        | Public        | Public           |
+| Logout                 | Authenticated | Authenticated | Authenticated    |
+| Create Project         | Allow         | Deny          | Deny             |
+| List Projects          | Allow         | Allow         | Allow            |
+| Project Detail         | Allow         | Allow         | Allow            |
+| Update Project         | Allow         | Deny          | Deny             |
+| Delete Project         | Allow         | Deny          | Deny             |
+| Create Task            | Allow         | Deny          | Deny             |
+| List Tasks             | Allow         | Allow         | Allow            |
+| Task Detail            | Allow         | Allow         | Allow            |
+| Update Task            | Allow         | Allow         | Assigned/Allowed |
+| Delete Task            | Allow         | Deny          | Deny             |
+| Assign Task            | Allow         | Deny          | Deny             |
+| Upload Document        | Allow         | Allow         | Allow            |
+| List Documents         | Allow         | Allow         | Allow            |
+| Document Detail        | Allow         | Allow         | Allow            |
+| Create Comment         | Allow         | Allow         | Allow            |
+| List Comments          | Allow         | Allow         | Allow            |
+| Comment Detail         | Allow         | Allow         | Allow            |
+| Update Own Comment     | Allow         | Allow         | Allow            |
+| Delete Own Comment     | Allow         | Allow         | Allow            |
+| Update Other Comment   | Allow         | Deny          | Deny             |
+| Delete Other Comment   | Allow         | Deny          | Deny             |
+| Project Comments       | Allow         | Allow         | Allow            |
+| Timeline Events        | Allow         | Allow         | Allow            |
+| Notifications          | Own           | Own           | Own              |
+| Mark Notification Read | Own           | Own           | Own              |
+
+---
+
+# 1. User Authentication APIs
 
 ## 1.1 Register User
 
@@ -476,33 +176,26 @@ POST /api/register/
 
 Not required.
 
-### Required Permissions
+### Permission
 
 Public.
 
 ### Content Type
 
-Because profile picture can be uploaded:
-
 ```text
 multipart/form-data
 ```
 
-### Required Fields
+### Fields
 
 ```text
 username
 email
 password
 password2
-```
-
-Profile information may include:
-
-```text
-profile_picture
 role
 contact_number
+profile_picture
 ```
 
 ### Example Request
@@ -517,7 +210,7 @@ contact_number = 3001234567
 profile_picture = profile.jpg
 ```
 
-### Success Response
+### Success
 
 ```json
 {
@@ -526,38 +219,6 @@ profile_picture = profile.jpg
         "username": "salman767",
         "email": "salman@example.com"
     }
-}
-```
-
-### Error Responses
-
-Invalid password:
-
-```json
-{
-    "password": [
-        "Passwords do not match."
-    ]
-}
-```
-
-Duplicate username:
-
-```json
-{
-    "username": [
-        "A user with that username already exists."
-    ]
-}
-```
-
-Missing required field:
-
-```json
-{
-    "email": [
-        "This field is required."
-    ]
 }
 ```
 
@@ -570,7 +231,7 @@ Missing required field:
 
 ---
 
-# 1.2 Login
+## 1.2 Login
 
 ### Endpoint
 
@@ -582,11 +243,11 @@ POST /api/login/
 
 Not required.
 
-### Required Permissions
+### Permission
 
 Public.
 
-### Request Body
+### Request
 
 ```json
 {
@@ -595,7 +256,7 @@ Public.
 }
 ```
 
-### Success Response
+### Success
 
 ```json
 {
@@ -604,7 +265,7 @@ Public.
 }
 ```
 
-### Error Response
+### Invalid Credentials
 
 ```json
 {
@@ -621,7 +282,7 @@ Public.
 
 ---
 
-# 1.3 Logout
+## 1.3 Logout
 
 ### Endpoint
 
@@ -633,11 +294,17 @@ POST /api/logout/
 
 Required.
 
-### Required Permissions
+### Permission
 
-Authenticated user.
+Any authenticated user.
 
-### Request Body
+### Header
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+### Request
 
 ```json
 {
@@ -645,25 +312,11 @@ Authenticated user.
 }
 ```
 
-### Headers
-
-```http
-Authorization: Bearer ACCESS_TOKEN
-```
-
-### Success Response
+### Success
 
 ```json
 {
     "message": "Logout successful"
-}
-```
-
-### Error Response
-
-```json
-{
-    "detail": "Invalid token"
 }
 ```
 
@@ -679,11 +332,7 @@ Authorization: Bearer ACCESS_TOKEN
 
 # 2. Project APIs
 
----
-
-# 2.1 Create Project
-
-### Endpoint
+## 2.1 Create Project
 
 ```http
 POST /api/projects/
@@ -693,18 +342,20 @@ POST /api/projects/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
-
-### Headers
-
-```http
-Authorization: Bearer ACCESS_TOKEN
-Content-Type: application/json
+```text
+Manager
 ```
 
-### Example Request
+### Denied Roles
+
+```text
+QA
+Developer
+```
+
+### Request
 
 ```json
 {
@@ -713,7 +364,7 @@ Content-Type: application/json
 }
 ```
 
-### Success Response
+### Success
 
 ```json
 {
@@ -723,13 +374,11 @@ Content-Type: application/json
 }
 ```
 
-### Error Response
+### Permission Denied
 
 ```json
 {
-    "name": [
-        "This field is required."
-    ]
+    "detail": "You do not have permission to perform this action."
 }
 ```
 
@@ -739,13 +388,12 @@ Content-Type: application/json
 201 Created
 400 Bad Request
 401 Unauthorized
+403 Forbidden
 ```
 
 ---
 
-# 2.2 List Projects
-
-### Endpoint
+## 2.2 List Projects
 
 ```http
 GET /api/projects/list/
@@ -755,21 +403,15 @@ GET /api/projects/list/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
-
-### Request Parameters
-
-None required.
-
-### Example Request
-
-```http
-GET /api/projects/list/
+```text
+Manager
+QA
+Developer
 ```
 
-### Success Response
+### Success
 
 ```json
 [
@@ -777,21 +419,8 @@ GET /api/projects/list/
         "id": 1,
         "name": "Project Management System",
         "description": "Collaborative project management application"
-    },
-    {
-        "id": 2,
-        "name": "Student Management System",
-        "description": "Student management API"
     }
 ]
-```
-
-### Error Response
-
-```json
-{
-    "detail": "Authentication credentials were not provided."
-}
 ```
 
 ### Status Codes
@@ -803,9 +432,7 @@ GET /api/projects/list/
 
 ---
 
-# 2.3 Project Detail
-
-### Endpoint
+## 2.3 Project Detail
 
 ```http
 GET /api/projects/{id}/
@@ -815,23 +442,21 @@ GET /api/projects/{id}/
 
 Required.
 
-### Permission
-
-Authenticated users.
-
-### Path Parameter
+### Allowed Roles
 
 ```text
-id
+Manager
+QA
+Developer
 ```
 
-Example:
+### Example
 
 ```http
 GET /api/projects/1/
 ```
 
-### Success Response
+### Success
 
 ```json
 {
@@ -841,70 +466,55 @@ GET /api/projects/1/
 }
 ```
 
-### Error Response
-
-```json
-{
-    "detail": "Not found."
-}
-```
-
 ### Status Codes
 
 ```text
 200 OK
-404 Not Found
 401 Unauthorized
+404 Not Found
 ```
 
 ---
 
-# 2.4 Update Project
-
-### Endpoint
+## 2.4 Update Project
 
 ```http
 PUT /api/projects/{id}/update/
 ```
 
-or use the supported partial update behavior if configured.
-
 ### Authentication
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated user with permission to modify the project.
-
-### Example Request
-
-```http
-PUT /api/projects/1/update/
+```text
+Manager
 ```
+
+### Denied Roles
+
+```text
+QA
+Developer
+```
+
+### Request
 
 ```json
 {
-    "name": "Updated Project Name",
-    "description": "Updated project description"
+    "name": "Updated Project",
+    "description": "Updated description"
 }
 ```
 
-### Success Response
+### Success
 
 ```json
 {
     "id": 1,
-    "name": "Updated Project Name",
-    "description": "Updated project description"
-}
-```
-
-### Error Response
-
-```json
-{
-    "detail": "Not found."
+    "name": "Updated Project",
+    "description": "Updated description"
 }
 ```
 
@@ -914,14 +524,13 @@ PUT /api/projects/1/update/
 200 OK
 400 Bad Request
 401 Unauthorized
+403 Forbidden
 404 Not Found
 ```
 
 ---
 
-# 2.5 Delete Project
-
-### Endpoint
+## 2.5 Delete Project
 
 ```http
 DELETE /api/projects/{id}/delete/
@@ -931,17 +540,20 @@ DELETE /api/projects/{id}/delete/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated user with permission to delete the project.
-
-### Example
-
-```http
-DELETE /api/projects/1/delete/
+```text
+Manager
 ```
 
-### Success Response
+### Denied Roles
+
+```text
+QA
+Developer
+```
+
+### Success
 
 ```json
 {
@@ -949,19 +561,12 @@ DELETE /api/projects/1/delete/
 }
 ```
 
-### Error Response
-
-```json
-{
-    "detail": "Not found."
-}
-```
-
 ### Status Codes
 
 ```text
-204 No Content / 200 OK
+200 OK / 204 No Content
 401 Unauthorized
+403 Forbidden
 404 Not Found
 ```
 
@@ -969,11 +574,7 @@ DELETE /api/projects/1/delete/
 
 # 3. Task APIs
 
----
-
-# 3.1 Create Task
-
-### Endpoint
+## 3.1 Create Task
 
 ```http
 POST /api/tasks/
@@ -983,11 +584,20 @@ POST /api/tasks/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
+```text
+Manager
+```
 
-### Example Request
+### Denied Roles
+
+```text
+QA
+Developer
+```
+
+### Request
 
 ```json
 {
@@ -997,7 +607,7 @@ Authenticated users.
 }
 ```
 
-### Success Response
+### Success
 
 ```json
 {
@@ -1008,37 +618,18 @@ Authenticated users.
 }
 ```
 
-### Error Responses
-
-```json
-{
-    "title": [
-        "This field is required."
-    ]
-}
-```
-
-```json
-{
-    "project": [
-        "Invalid pk."
-    ]
-}
-```
-
 ### Status Codes
 
 ```text
 201 Created
 400 Bad Request
 401 Unauthorized
+403 Forbidden
 ```
 
 ---
 
-# 3.2 List Tasks
-
-### Endpoint
+## 3.2 List Tasks
 
 ```http
 GET /api/tasks/
@@ -1048,17 +639,15 @@ GET /api/tasks/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
-
-### Example Request
-
-```http
-GET /api/tasks/
+```text
+Manager
+QA
+Developer
 ```
 
-### Success Response
+### Success
 
 ```json
 [
@@ -1080,9 +669,7 @@ GET /api/tasks/
 
 ---
 
-# 3.3 Task Detail
-
-### Endpoint
+## 3.3 Task Detail
 
 ```http
 GET /api/tasks/{id}/
@@ -1092,33 +679,18 @@ GET /api/tasks/{id}/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
+```text
+Manager
+QA
+Developer
+```
 
 ### Example
 
 ```http
 GET /api/tasks/1/
-```
-
-### Success Response
-
-```json
-{
-    "id": 1,
-    "title": "Create Login API",
-    "description": "Implement JWT login functionality",
-    "project": 1
-}
-```
-
-### Error Response
-
-```json
-{
-    "detail": "Not found."
-}
 ```
 
 ### Status Codes
@@ -1131,9 +703,7 @@ GET /api/tasks/1/
 
 ---
 
-# 3.4 Update Task
-
-### Endpoint
+## 3.4 Update Task
 
 ```http
 PUT /api/tasks/{id}/update/
@@ -1143,11 +713,19 @@ PUT /api/tasks/{id}/update/
 
 Required.
 
-### Permission
+### Manager
 
-Authenticated user with update permission.
+Can update any task.
 
-### Example Request
+### QA
+
+Can update allowed tasks.
+
+### Developer
+
+Can update tasks assigned to/allowed for the developer.
+
+### Request
 
 ```json
 {
@@ -1156,7 +734,7 @@ Authenticated user with update permission.
 }
 ```
 
-### Success Response
+### Success
 
 ```json
 {
@@ -1172,14 +750,13 @@ Authenticated user with update permission.
 200 OK
 400 Bad Request
 401 Unauthorized
+403 Forbidden
 404 Not Found
 ```
 
 ---
 
-# 3.5 Delete Task
-
-### Endpoint
+## 3.5 Delete Task
 
 ```http
 DELETE /api/tasks/{id}/delete/
@@ -1189,17 +766,20 @@ DELETE /api/tasks/{id}/delete/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated user with delete permission.
-
-### Example
-
-```http
-DELETE /api/tasks/1/delete/
+```text
+Manager
 ```
 
-### Success Response
+### Denied Roles
+
+```text
+QA
+Developer
+```
+
+### Success
 
 ```json
 {
@@ -1212,14 +792,13 @@ DELETE /api/tasks/1/delete/
 ```text
 200 OK / 204 No Content
 401 Unauthorized
+403 Forbidden
 404 Not Found
 ```
 
 ---
 
-# 3.6 Assign Task
-
-### Endpoint
+## 3.6 Assign Task
 
 ```http
 POST /api/tasks/{id}/assign/
@@ -1229,11 +808,20 @@ POST /api/tasks/{id}/assign/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated user with task assignment permission.
+```text
+Manager
+```
 
-### Example Request
+### Denied Roles
+
+```text
+QA
+Developer
+```
+
+### Request
 
 ```json
 {
@@ -1241,21 +829,11 @@ Authenticated user with task assignment permission.
 }
 ```
 
-### Success Response
+### Success
 
 ```json
 {
     "message": "Task assigned successfully"
-}
-```
-
-### Error Response
-
-```json
-{
-    "assigned_to": [
-        "Invalid user."
-    ]
 }
 ```
 
@@ -1265,6 +843,7 @@ Authenticated user with task assignment permission.
 200 OK
 400 Bad Request
 401 Unauthorized
+403 Forbidden
 404 Not Found
 ```
 
@@ -1272,11 +851,7 @@ Authenticated user with task assignment permission.
 
 # 4. Document APIs
 
----
-
-# 4.1 Upload Document
-
-### Endpoint
+## 4.1 Upload Document
 
 ```http
 POST /api/documents/
@@ -1286,9 +861,13 @@ POST /api/documents/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
+```text
+Manager
+QA
+Developer
+```
 
 ### Content Type
 
@@ -1296,7 +875,7 @@ Authenticated users.
 multipart/form-data
 ```
 
-### Example Request
+### Request
 
 ```text
 title = Project Documentation
@@ -1304,7 +883,7 @@ project = 1
 file = documentation.pdf
 ```
 
-### Success Response
+### Success
 
 ```json
 {
@@ -1315,29 +894,18 @@ file = documentation.pdf
 }
 ```
 
-### Error Response
-
-```json
-{
-    "file": [
-        "This field is required."
-    ]
-}
-```
-
 ### Status Codes
 
 ```text
 201 Created
 400 Bad Request
 401 Unauthorized
+403 Forbidden
 ```
 
 ---
 
-# 4.2 List Documents
-
-### Endpoint
+## 4.2 List Documents
 
 ```http
 GET /api/documents/list/
@@ -1347,17 +915,15 @@ GET /api/documents/list/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
-
-### Example
-
-```http
-GET /api/documents/list/
+```text
+Manager
+QA
+Developer
 ```
 
-### Success Response
+### Success
 
 ```json
 [
@@ -1379,9 +945,7 @@ GET /api/documents/list/
 
 ---
 
-# 4.3 Document Detail
-
-### Endpoint
+## 4.3 Document Detail
 
 ```http
 GET /api/documents/{id}/
@@ -1391,17 +955,15 @@ GET /api/documents/{id}/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
-
-### Example
-
-```http
-GET /api/documents/1/
+```text
+Manager
+QA
+Developer
 ```
 
-### Success Response
+### Success
 
 ```json
 {
@@ -1409,14 +971,6 @@ GET /api/documents/1/
     "title": "Project Documentation",
     "project": 1,
     "file": "/media/documents/documentation.pdf"
-}
-```
-
-### Error Response
-
-```json
-{
-    "detail": "Not found."
 }
 ```
 
@@ -1432,11 +986,7 @@ GET /api/documents/1/
 
 # 5. Comment APIs
 
----
-
-# 5.1 Create Comment
-
-### Endpoint
+## 5.1 Create Comment
 
 ```http
 POST /api/comments/
@@ -1446,11 +996,15 @@ POST /api/comments/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
+```text
+Manager
+QA
+Developer
+```
 
-### Example Request
+### Request
 
 ```json
 {
@@ -1459,23 +1013,13 @@ Authenticated users.
 }
 ```
 
-### Success Response
+### Success
 
 ```json
 {
     "id": 1,
     "project": 1,
     "content": "This project is progressing well."
-}
-```
-
-### Error Response
-
-```json
-{
-    "content": [
-        "This field is required."
-    ]
 }
 ```
 
@@ -1489,9 +1033,7 @@ Authenticated users.
 
 ---
 
-# 5.2 List Comments
-
-### Endpoint
+## 5.2 List Comments
 
 ```http
 GET /api/comments/
@@ -1501,26 +1043,12 @@ GET /api/comments/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
-
-### Example
-
-```http
-GET /api/comments/
-```
-
-### Success Response
-
-```json
-[
-    {
-        "id": 1,
-        "project": 1,
-        "content": "This project is progressing well."
-    }
-]
+```text
+Manager
+QA
+Developer
 ```
 
 ### Status Codes
@@ -1532,9 +1060,7 @@ GET /api/comments/
 
 ---
 
-# 5.3 Comment Detail
-
-### Endpoint
+## 5.3 Comment Detail
 
 ```http
 GET /api/comments/{id}/
@@ -1544,17 +1070,15 @@ GET /api/comments/{id}/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
-
-### Example
-
-```http
-GET /api/comments/1/
+```text
+Manager
+QA
+Developer
 ```
 
-### Success Response
+### Success
 
 ```json
 {
@@ -1564,19 +1088,17 @@ GET /api/comments/1/
 }
 ```
 
-### Error Response
+### Status Codes
 
-```json
-{
-    "detail": "Not found."
-}
+```text
+200 OK
+401 Unauthorized
+404 Not Found
 ```
 
 ---
 
-# 5.4 Update Comment
-
-### Endpoint
+## 5.4 Update Comment
 
 ```http
 PUT /api/comments/{id}/
@@ -1586,11 +1108,27 @@ PUT /api/comments/{id}/
 
 Required.
 
-### Permission
+### Permission Rules
 
-Comment author / authorized authenticated user.
+Manager:
 
-### Example Request
+```text
+Can update any comment.
+```
+
+QA:
+
+```text
+Can update own comments.
+```
+
+Developer:
+
+```text
+Can update own comments.
+```
+
+### Request
 
 ```json
 {
@@ -1598,7 +1136,7 @@ Comment author / authorized authenticated user.
 }
 ```
 
-### Success Response
+### Success
 
 ```json
 {
@@ -1613,14 +1151,13 @@ Comment author / authorized authenticated user.
 200 OK
 400 Bad Request
 401 Unauthorized
+403 Forbidden
 404 Not Found
 ```
 
 ---
 
-# 5.5 Delete Comment
-
-### Endpoint
+## 5.5 Delete Comment
 
 ```http
 DELETE /api/comments/{id}/
@@ -1630,17 +1167,27 @@ DELETE /api/comments/{id}/
 
 Required.
 
-### Permission
+### Permission Rules
 
-Comment author / authorized authenticated user.
+Manager:
 
-### Example
-
-```http
-DELETE /api/comments/1/
+```text
+Can delete any comment.
 ```
 
-### Success Response
+QA:
+
+```text
+Can delete own comments.
+```
+
+Developer:
+
+```text
+Can delete own comments.
+```
+
+### Success
 
 ```json
 {
@@ -1653,14 +1200,13 @@ DELETE /api/comments/1/
 ```text
 200 OK / 204 No Content
 401 Unauthorized
+403 Forbidden
 404 Not Found
 ```
 
 ---
 
-# 5.6 Project Comments
-
-### Endpoint
+## 5.6 Project Comments
 
 ```http
 GET /api/projects/{id}/comments/
@@ -1670,17 +1216,15 @@ GET /api/projects/{id}/comments/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
-
-### Example
-
-```http
-GET /api/projects/1/comments/
+```text
+Manager
+QA
+Developer
 ```
 
-### Success Response
+### Success
 
 ```json
 [
@@ -1690,14 +1234,6 @@ GET /api/projects/1/comments/
         "content": "This project is progressing well."
     }
 ]
-```
-
-### Error Response
-
-```json
-{
-    "detail": "Not found."
-}
 ```
 
 ### Status Codes
@@ -1710,13 +1246,9 @@ GET /api/projects/1/comments/
 
 ---
 
-# 6. Timeline Event APIs
+# 6. Timeline APIs
 
----
-
-# 6.1 List Timeline Events
-
-### Endpoint
+## 6.1 List Timeline Events
 
 ```http
 GET /api/timeline/
@@ -1726,17 +1258,15 @@ GET /api/timeline/
 
 Required.
 
-### Permission
+### Allowed Roles
 
-Authenticated users.
-
-### Example
-
-```http
-GET /api/timeline/
+```text
+Manager
+QA
+Developer
 ```
 
-### Success Response
+### Success
 
 ```json
 [
@@ -1760,11 +1290,7 @@ GET /api/timeline/
 
 # 7. Notification APIs
 
----
-
-# 7.1 List Notifications
-
-### Endpoint
+## 7.1 List Notifications
 
 ```http
 GET /api/notifications/
@@ -1776,15 +1302,17 @@ Required.
 
 ### Permission
 
-Authenticated users.
+Users can access their own notifications.
 
-### Example
+### Allowed Roles
 
-```http
-GET /api/notifications/
+```text
+Manager
+QA
+Developer
 ```
 
-### Success Response
+### Success
 
 ```json
 [
@@ -1805,9 +1333,7 @@ GET /api/notifications/
 
 ---
 
-# 7.2 Mark Notification as Read
-
-### Endpoint
+## 7.2 Mark Notification as Read
 
 ```http
 PATCH /api/notifications/{id}/read/
@@ -1819,27 +1345,15 @@ Required.
 
 ### Permission
 
-Authenticated owner of the notification.
+The authenticated user can mark their own notification as read.
 
-### Example
+A user cannot modify another user's notification.
 
-```http
-PATCH /api/notifications/1/read/
-```
-
-### Success Response
+### Success
 
 ```json
 {
     "message": "Notification marked as read"
-}
-```
-
-### Error Response
-
-```json
-{
-    "detail": "Not found."
 }
 ```
 
@@ -1848,6 +1362,7 @@ PATCH /api/notifications/1/read/
 ```text
 200 OK
 401 Unauthorized
+403 Forbidden
 404 Not Found
 ```
 
@@ -1855,196 +1370,325 @@ PATCH /api/notifications/1/read/
 
 # API Summary
 
-| #  | API                    | Method | Authentication |
-| -- | ---------------------- | ------ | -------------- |
-| 1  | Register               | POST   | No             |
-| 2  | Login                  | POST   | No             |
-| 3  | Logout                 | POST   | Yes            |
-| 4  | Create Project         | POST   | Yes            |
-| 5  | List Projects          | GET    | Yes            |
-| 6  | Project Detail         | GET    | Yes            |
-| 7  | Update Project         | PUT    | Yes            |
-| 8  | Delete Project         | DELETE | Yes            |
-| 9  | Create Task            | POST   | Yes            |
-| 10 | List Tasks             | GET    | Yes            |
-| 11 | Task Detail            | GET    | Yes            |
-| 12 | Update Task            | PUT    | Yes            |
-| 13 | Delete Task            | DELETE | Yes            |
-| 14 | Assign Task            | POST   | Yes            |
-| 15 | Upload Document        | POST   | Yes            |
-| 16 | List Documents         | GET    | Yes            |
-| 17 | Document Detail        | GET    | Yes            |
-| 18 | Create Comment         | POST   | Yes            |
-| 19 | List Comments          | GET    | Yes            |
-| 20 | Comment Detail         | GET    | Yes            |
-| 21 | Update Comment         | PUT    | Yes            |
-| 22 | Delete Comment         | DELETE | Yes            |
-| 23 | Project Comments       | GET    | Yes            |
-| 24 | Timeline Events        | GET    | Yes            |
-| 25 | Notifications          | GET    | Yes            |
-| 26 | Mark Notification Read | PATCH  | Yes            |
+|  # | API                    | Method | Authentication | Main Permission    |
+| -: | ---------------------- | ------ | -------------- | ------------------ |
+|  1 | Register               | POST   | No             | Public             |
+|  2 | Login                  | POST   | No             | Public             |
+|  3 | Logout                 | POST   | Yes            | Authenticated      |
+|  4 | Create Project         | POST   | Yes            | Manager            |
+|  5 | List Projects          | GET    | Yes            | All Roles          |
+|  6 | Project Detail         | GET    | Yes            | All Roles          |
+|  7 | Update Project         | PUT    | Yes            | Manager            |
+|  8 | Delete Project         | DELETE | Yes            | Manager            |
+|  9 | Create Task            | POST   | Yes            | Manager            |
+| 10 | List Tasks             | GET    | Yes            | All Roles          |
+| 11 | Task Detail            | GET    | Yes            | All Roles          |
+| 12 | Update Task            | PUT    | Yes            | Role/Assignment    |
+| 13 | Delete Task            | DELETE | Yes            | Manager            |
+| 14 | Assign Task            | POST   | Yes            | Manager            |
+| 15 | Upload Document        | POST   | Yes            | All Roles          |
+| 16 | List Documents         | GET    | Yes            | All Roles          |
+| 17 | Document Detail        | GET    | Yes            | All Roles          |
+| 18 | Create Comment         | POST   | Yes            | All Roles          |
+| 19 | List Comments          | GET    | Yes            | All Roles          |
+| 20 | Comment Detail         | GET    | Yes            | All Roles          |
+| 21 | Update Comment         | PUT    | Yes            | Owner/Manager      |
+| 22 | Delete Comment         | DELETE | Yes            | Owner/Manager      |
+| 23 | Project Comments       | GET    | Yes            | All Roles          |
+| 24 | Timeline Events        | GET    | Yes            | All Roles          |
+| 25 | Notifications          | GET    | Yes            | Own Notifications  |
+| 26 | Mark Notification Read | PATCH  | Yes            | Notification Owner |
 
 ---
 
 # HTTP Status Codes
 
-| Status Code | Meaning                                       |
-| ----------- | --------------------------------------------- |
-| 200         | Request successful                            |
-| 201         | Resource created                              |
-| 204         | Resource deleted successfully                 |
-| 400         | Bad Request                                   |
-| 401         | Authentication required / invalid credentials |
-| 403         | Permission denied                             |
-| 404         | Resource not found                            |
-| 405         | Method not allowed                            |
-| 500         | Internal server error                         |
+| Status | Meaning                                       |
+| -----: | --------------------------------------------- |
+|    200 | Request successful                            |
+|    201 | Resource created                              |
+|    204 | Resource deleted successfully                 |
+|    400 | Bad Request                                   |
+|    401 | Authentication required / invalid credentials |
+|    403 | Authenticated but permission denied           |
+|    404 | Resource not found                            |
+|    405 | Method not allowed                            |
+|    500 | Internal server error                         |
 
 ---
 
-# Testing
+# Authentication vs Authorization
 
-The project contains automated tests.
+## Authentication
 
-Run all tests:
-
-```bash
-python manage.py test
-```
-
-Run only the accounts application:
-
-```bash
-python manage.py test accounts
-```
-
-Run with verbosity:
-
-```bash
-python manage.py test accounts -v 2
-```
-
-Expected output:
-
-```text
-Found X test(s).
-System check identified no issues.
-...
-OK
-```
-
----
-
-# Testing APIs Using Postman
-
-## Step 1 — Register
-
-```http
-POST http://127.0.0.1:8000/api/register/
-```
-
-Use:
-
-```text
-Body → form-data
-```
-
-Add required registration fields.
-
----
-
-## Step 2 — Login
-
-```http
-POST http://127.0.0.1:8000/api/login/
-```
-
-Body:
-
-```json
-{
-    "username": "salman767",
-    "password": "Salman12345"
-}
-```
-
-Copy the returned access token.
-
----
-
-## Step 3 — Set Authorization
-
-For protected APIs:
-
-```text
-Authorization
-Bearer Token
-```
-
-Paste:
-
-```text
-ACCESS_TOKEN
-```
-
----
-
-## Step 4 — Test Project APIs
+Authentication checks whether the user has a valid JWT token.
 
 Example:
 
-```http
-POST http://127.0.0.1:8000/api/projects/
+```text
+No JWT
+   ↓
+401 Unauthorized
 ```
 
-Body:
+## Authorization
 
-```json
-{
-    "name": "Test Project",
-    "description": "Testing project API"
-}
-```
+Authorization checks whether the authenticated user has permission to perform the requested operation.
 
-Then test:
+Example:
 
-```http
-GET /api/projects/list/
-```
-
-```http
-GET /api/projects/1/
-```
-
-```http
-PUT /api/projects/1/update/
-```
-
-```http
-DELETE /api/projects/1/delete/
+```text
+Valid JWT
+   ↓
+Developer
+   ↓
+POST /api/projects/
+   ↓
+Project creation requires Manager
+   ↓
+403 Forbidden
 ```
 
 ---
 
-# Swagger API Testing
+# Authorization Test Cases
 
-After starting the server, open:
+The application should test both successful and denied operations.
+
+## Authentication Tests
+
+### Registration
+
+```text
+test_register_user
+test_duplicate_username
+test_password_mismatch
+test_missing_required_field
+```
+
+### Login
+
+```text
+test_login_success
+test_login_invalid_credentials
+```
+
+### Logout
+
+```text
+test_logout_success
+test_logout_invalid_refresh_token
+```
+
+---
+
+# Project Permission Tests
+
+```text
+test_manager_can_create_project
+test_qa_cannot_create_project
+test_developer_cannot_create_project
+
+test_all_roles_can_list_projects
+test_all_roles_can_view_project
+
+test_manager_can_update_project
+test_qa_cannot_update_project
+test_developer_cannot_update_project
+
+test_manager_can_delete_project
+test_qa_cannot_delete_project
+test_developer_cannot_delete_project
+```
+
+Expected denied response:
+
+```text
+403 Forbidden
+```
+
+---
+
+# Task Permission Tests
+
+```text
+test_manager_can_create_task
+test_qa_cannot_create_task
+test_developer_cannot_create_task
+
+test_all_roles_can_list_tasks
+test_all_roles_can_view_task
+
+test_manager_can_update_task
+test_qa_can_update_allowed_task
+test_developer_can_update_assigned_task
+
+test_unauthorized_user_cannot_update_task
+
+test_manager_can_delete_task
+test_qa_cannot_delete_task
+test_developer_cannot_delete_task
+
+test_manager_can_assign_task
+test_qa_cannot_assign_task
+test_developer_cannot_assign_task
+```
+
+---
+
+# Document Permission Tests
+
+```text
+test_manager_can_upload_document
+test_qa_can_upload_document
+test_developer_can_upload_document
+
+test_all_roles_can_list_documents
+test_all_roles_can_view_document
+
+test_unauthenticated_cannot_access_documents
+```
+
+---
+
+# Comment Permission Tests
+
+```text
+test_manager_can_create_comment
+test_qa_can_create_comment
+test_developer_can_create_comment
+
+test_all_roles_can_list_comments
+test_all_roles_can_view_comment
+
+test_manager_can_update_any_comment
+
+test_qa_can_update_own_comment
+test_developer_can_update_own_comment
+
+test_qa_cannot_update_other_user_comment
+test_developer_cannot_update_other_user_comment
+
+test_manager_can_delete_any_comment
+
+test_qa_can_delete_own_comment
+test_developer_can_delete_own_comment
+
+test_qa_cannot_delete_other_user_comment
+test_developer_cannot_delete_other_user_comment
+```
+
+---
+
+# Timeline Permission Tests
+
+```text
+test_manager_can_view_timeline
+test_qa_can_view_timeline
+test_developer_can_view_timeline
+test_unauthenticated_cannot_view_timeline
+```
+
+---
+
+# Notification Permission Tests
+
+```text
+test_manager_can_view_own_notifications
+test_qa_can_view_own_notifications
+test_developer_can_view_own_notifications
+
+test_manager_can_mark_own_notification_read
+test_qa_can_mark_own_notification_read
+test_developer_can_mark_own_notification_read
+
+test_user_cannot_access_other_user_notification
+test_user_cannot_mark_other_user_notification_read
+```
+
+---
+
+# General Authorization Tests
+
+Every protected endpoint should verify:
+
+### No authentication
+
+Expected:
+
+```text
+401 Unauthorized
+```
+
+### Authentication with wrong role
+
+Expected:
+
+```text
+403 Forbidden
+```
+
+### Authentication with correct role
+
+Expected:
+
+```text
+200 OK
+201 Created
+204 No Content
+```
+
+depending on the operation.
+
+### Ownership protection
+
+For resources such as comments and notifications:
+
+```text
+Correct owner
+    ↓
+Allowed
+
+Different user
+    ↓
+403 Forbidden
+```
+
+---
+
+# Swagger API Documentation
+
+The project uses **DRF Spectacular**.
+
+Swagger:
 
 ```text
 http://127.0.0.1:8000/api/docs/
 ```
 
-Swagger provides:
+ReDoc:
 
-* All API endpoints
-* HTTP methods
-* Request parameters
-* Request body
-* Response schemas
-* Authentication
-* Interactive API testing
+```text
+http://127.0.0.1:8000/api/redoc/
+```
 
-For protected APIs, authorize Swagger with:
+OpenAPI schema:
+
+```text
+http://127.0.0.1:8000/api/schema/
+```
+
+Swagger can be used to:
+
+* View all endpoints
+* View HTTP methods
+* View request parameters
+* View request bodies
+* View response schemas
+* Authorize JWT tokens
+* Test APIs interactively
+
+For protected endpoints, provide:
 
 ```text
 Bearer ACCESS_TOKEN
@@ -2052,322 +1696,121 @@ Bearer ACCESS_TOKEN
 
 ---
 
-# Environment Configuration
-
-Production deployment should use:
-
-```env
-DEBUG=False
-```
-
-A secure `SECRET_KEY` must be generated for production.
-
-Never expose:
-
-* SECRET_KEY
-* Database passwords
-* JWT secrets
-* API keys
-* `.env`
-
-in the public GitHub repository.
-
----
-
-# Git Workflow
-
-Check repository status:
-
-```bash
-git status
-```
-
-Add files:
-
-```bash
-git add .
-```
-
-Create a commit:
-
-```bash
-git commit -m "Add project management API documentation"
-```
-
-Push changes:
-
-```bash
-git push origin main
-```
-
----
-
-# Recommended Commit Structure
-
-For ticket-based development, use separate commits.
-
-Example:
-
-```text
-feat: implement user registration API
-feat: implement JWT login API
-feat: implement logout API
-feat: implement project creation API
-feat: implement project listing API
-feat: implement project detail API
-feat: implement project update API
-feat: implement project deletion API
-feat: implement task creation API
-feat: implement task listing API
-feat: implement task detail API
-feat: implement task update API
-feat: implement task deletion API
-feat: implement task assignment API
-feat: implement document upload API
-feat: implement document listing API
-feat: implement document detail API
-feat: implement comment APIs
-feat: implement timeline event API
-feat: implement notification API
-test: add API test cases
-docs: add complete API documentation
-```
-
----
-
-# Troubleshooting
-
-## Migration Error
-
-Run:
-
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
----
-
-## Server Not Starting
-
-Check:
-
-```bash
-python manage.py check
-```
-
-Then:
-
-```bash
-python manage.py runserver
-```
-
----
-
-## Authentication Error
-
-If you receive:
-
-```text
-Authentication credentials were not provided.
-```
-
-Make sure the request contains:
-
-```http
-Authorization: Bearer ACCESS_TOKEN
-```
-
----
-
-## Token Expired
-
-Login again and obtain a new access token.
-
-```http
-POST /api/login/
-```
-
----
-
-## Media File Not Showing
-
-Make sure `MEDIA_URL` and `MEDIA_ROOT` are configured and that the development URL configuration serves media files.
-
----
-
-## Profile Picture Upload
-
-Use Postman:
-
-```text
-Body
-→ form-data
-```
-
-Set:
-
-```text
-profile_picture = File
-```
-
-Do not send the image field as raw JSON.
-
----
-
-# Security
-
-The following security practices are recommended:
-
-* Keep `DEBUG=False` in production.
-* Never commit `.env`.
-* Use a strong Django secret key.
-* Use HTTPS in production.
-* Use secure database credentials.
-* Rotate JWT secrets when required.
-* Validate uploaded files.
-* Restrict permissions for sensitive operations.
-* Do not expose private information in API responses.
-
----
-
-# Production Deployment
-
-Before deploying:
-
-```bash
-python manage.py check --deploy
-```
-
-Set:
-
-```env
-DEBUG=False
-```
-
-Configure:
-
-* Production database
-* Allowed hosts
-* CORS
-* HTTPS
-* Static files
-* Media files
-* Environment variables
-* Secret keys
-
-Then collect static files:
-
-```bash
-python manage.py collectstatic
-```
-
----
-
-# API Development Workflow
-
-A new developer can follow this workflow:
-
-```text
-1. Clone repository
-        ↓
-2. Create virtual environment
-        ↓
-3. Activate virtual environment
-        ↓
-4. Install requirements
-        ↓
-5. Configure .env
-        ↓
-6. Run migrations
-        ↓
-7. Create superuser
-        ↓
-8. Start server
-        ↓
-9. Open Swagger
-        ↓
-10. Register user
-        ↓
-11. Login
-        ↓
-12. Copy JWT access token
-        ↓
-13. Authorize protected APIs
-        ↓
-14. Test Project APIs
-        ↓
-15. Test Task APIs
-        ↓
-16. Test Document APIs
-        ↓
-17. Test Comment APIs
-        ↓
-18. Test Timeline APIs
-        ↓
-19. Test Notification APIs
-        ↓
-20. Run automated tests
-```
-
----
-
 # Complete API Flow
-
-A typical user flow is:
 
 ```text
 Register
    ↓
 Login
    ↓
-Receive Access + Refresh Token
+Receive JWT Access + Refresh Token
    ↓
-Create Project
+Authorize API Requests
    ↓
-Create Task
+Role Checked
    ↓
-Assign Task
+Manager / QA / Developer
    ↓
-Upload Document
+Permission Checked
    ↓
-Add Comment
+Allowed Operation
    ↓
-View Timeline
+Create / Read / Update / Delete
    ↓
-Receive Notification
-   ↓
-Mark Notification as Read
+Timeline Event / Notification
    ↓
 Logout
 ```
 
 ---
 
-# Project Status
+# Role-Based Authorization Flow
 
-The project implements the backend APIs required for a collaborative project management system using Django REST Framework and JWT authentication.
+```text
+Request
+   ↓
+JWT Authentication
+   ↓
+Is user authenticated?
+   ├── No → 401 Unauthorized
+   │
+   └── Yes
+        ↓
+     Get Profile
+        ↓
+     Check Role
+        ↓
+     Is role allowed?
+        ├── No → 403 Forbidden
+        │
+        └── Yes
+             ↓
+        Check Ownership
+             ↓
+        Permission Granted
+             ↓
+        Execute API
+```
 
 ---
 
-# Author
+# Security Notes
 
-**Muhammad Salman**
+Protected APIs must never rely only on authentication.
 
-GitHub:
-
-```text
-https://github.com/MuhammadSalman763
-```
-
-Repository:
+The application must verify:
 
 ```text
-https://github.com/MuhammadSalman763/ProjectManagement-Api
+Authentication
++
+Role
++
+Ownership where applicable
 ```
+
+This prevents users from performing operations outside their assigned responsibilities.
 
 ---
 
-# License
+# Documentation Separation
 
-This project is developed for educational and project development purposes.
+The project follows this documentation structure:
+
+### README.md
+
+Contains:
+
+* Project overview
+* Features
+* Technology stack
+* Project structure
+* Requirements
+* Installation
+* Virtual environment
+* Dependencies
+* Environment variables
+* Database setup
+* Superuser creation
+* Running the server
+* Testing setup
+* Security
+* Deployment
+* Git workflow
+
+### API_DOCUMENTATION.md
+
+Contains:
+
+* Base URL
+* Authentication
+* Authorization
+* Roles
+* Permission matrix
+* API endpoints
+* Request examples
+* Response examples
+* Status codes
+* Authorization test cases
+* Swagger documentation
+
+This separation keeps installation and environment configuration out of the API reference documentation.

@@ -1,79 +1,127 @@
 # Collaborative Project Management API
 
-A professional RESTful backend API for a collaborative project management system built with **Django** and **Django REST Framework (DRF)**.
+A professional RESTful backend API for a collaborative project management system built with Django and Django REST Framework.
 
-The system is designed to provide project management functionality similar to platforms such as **Jira, GitHub Issues, and YouTrack**, allowing teams to manage projects, tasks, tickets, documents, comments, timelines, and notifications through secure REST APIs.
+The system provides secure APIs for user authentication, project management, task management, document management, comments, timeline events, and notifications.
+
+The API uses JWT authentication together with role-based authorization to control what each user role can create, read, update, and delete.
 
 ---
 
-## 🚀 Features
+## Features
 
-- User registration and authentication
-- JWT-based authentication
-- User logout with refresh-token blacklisting
-- User profiles
+### Authentication
+- User registration
+- JWT login
+- JWT access token
+- JWT refresh token
+- Logout
+- Refresh-token blacklisting
+
+### User Profiles
 - Profile picture upload
-- Role-based user profiles
-- Project management
-- Project team members
-- Task management
-- Task assignment
-- Task status management
-- Project document management
-- Custom document version field
-- Comments and discussions
-- Timeline events
-- User notifications
+- User roles
+- Contact number
+- Manager role
+- QA role
+- Developer role
+
+### Role-Based Authorization
+
+The system supports three roles:
+
+- Manager
+- QA
+- Developer
+
+Permissions are enforced at API level.
+
+Users must be authenticated and must have the appropriate role to perform protected operations.
+
+### Project Management
+- Create projects
+- List projects
+- View project details
+- Update projects
+- Delete projects
+
+### Task Management
+- Create tasks
+- List tasks
+- View task details
+- Update tasks
+- Delete tasks
+- Assign tasks
+
+### Document Management
+- Upload documents
+- List documents
+- View document details
+- Document version management
+
+### Collaboration
+- Create comments
+- List comments
+- View comment details
+- Update comments
+- Delete comments
+- View project comments
+
+### Activity
+- View timeline events
+
+### Notifications
+- View notifications
 - Mark notifications as read
-- Ticket / issue management
-- Project-based access validation
-- Team-member validation
-- API-level validation
-- RESTful API architecture
 
 ---
 
-# 🛠️ Technology Stack
+# Technology Stack
 
 | Technology | Purpose |
 |---|---|
-| Python | Backend programming language |
-| Django | Web framework |
-| Django REST Framework | REST API development |
-| Simple JWT | Authentication |
+| Python | Programming language |
+| Django | Backend framework |
+| Django REST Framework | REST API |
+| Simple JWT | JWT authentication |
+| DRF Spectacular | OpenAPI / Swagger documentation |
 | SQLite | Development database |
-| Pillow | Image/file processing |
+| Pillow | Image processing |
+| python-dotenv | Environment variables |
 | Git | Version control |
-| GitHub | Source code management |
+| GitHub | Repository hosting |
 | Postman | API testing |
 
 ---
 
-# 📁 Project Structure
+# Project Structure
 
 ```text
-Project ManagemetAPI/
-│
+ProjectManagement-Api/
+
 ├── accounts/
 │   ├── migrations/
 │   ├── admin.py
 │   ├── apps.py
 │   ├── models.py
+│   ├── permissions.py
 │   ├── serializers.py
+│   ├── tests.py
 │   ├── urls.py
 │   └── views.py
 │
-├── config/
-│   ├── __init__.py
+├── project_management/
 │   ├── settings.py
 │   ├── urls.py
 │   ├── asgi.py
 │   └── wsgi.py
 │
 ├── media/
-│
-├── static/
+│   └── profile_pictures/
 │
 ├── manage.py
 ├── requirements.txt
-└── README.md
+├── .env
+├── .gitignore
+├── README.md
+└── API_DOCUMENTATION.md
